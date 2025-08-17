@@ -14,7 +14,7 @@ class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SubCategory
         fields = '__all__'
-        read_only_fields = ('id', 'category')
+        read_only_fields = ('id', )
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
