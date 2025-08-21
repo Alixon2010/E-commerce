@@ -1,11 +1,11 @@
 meta {
-  name: Login
+  name: Refresh Token
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
-  url: {{url}}/api/token/
+  url: {{url}}/api/token/refresh/
   body: multipartForm
   auth: inherit
 }

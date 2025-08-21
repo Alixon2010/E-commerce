@@ -10,7 +10,10 @@ router.register('products', views.ProductViewSet)
 
 urlpatterns = [
     path('register/', views.Register.as_view()),
-    path('users/', views.UserList.as_view())
+    path('users/', views.UserList.as_view()),
+    path('logout/', views.Logout.as_view()),
+    path('reset_password/', views.ResetPassword.as_view()),
+    path('reset_password/confirm/', views.ResetPasswordConfirm.as_view()),
 ]
 
 urlpatterns += router.urls
