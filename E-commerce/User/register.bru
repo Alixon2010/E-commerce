@@ -1,0 +1,15 @@
+meta {
+  name: register
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api}}/register/
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
