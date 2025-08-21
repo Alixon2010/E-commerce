@@ -3,11 +3,9 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models
-from rest_framework.exceptions import ValidationError
 
 User = get_user_model()
 
-User = get_user_model()
 
 class Profile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
@@ -50,7 +48,7 @@ class Card(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='card', )
 
-    def to_card(self, product, quantity):
+    def to_card(self, product, quantity = 1):
 
         if product.stock < quantity:
             return False
@@ -61,31 +59,26 @@ class Card(models.Model):
 
         card_product, created = CardProduct.objects.get_or_create(card=self, product=product)
 
+        if created:
+            card_product.quantity = quantity
+        else:
+            card_product.quantity += quantity
 
-        card_product.quantity += quantity
         card_product.save()
 
         return True
 
-    def remove_card(self, product, quantity):
+    def remove_card(self, product):
         try:
             card_product = CardProduct.objects.get(card=self, product=product)
         except CardProduct.DoesNotExist:
-            raise ValueError("Продукт не в корзине")
+            return False
 
-        if quantity > card_product.quantity:
-            raise ValueError("")
-
-            # вернуть товар на склад
-        product.stock += quantity
+        product.stock += card_product.quantity
+        card_product.delete()
         product.save()
 
-        # уменьшить количество в корзине
-        card_product.quantity -= quantity
-        if card_product.quantity <= 0:
-            card_product.delete()
-        else:
-            card_product.save()
+        return True
 
 
 class CardProduct(models.Model):
