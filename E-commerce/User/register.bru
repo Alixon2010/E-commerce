@@ -4,10 +4,17 @@ meta {
   seq: 1
 }
 
-get {
+post {
   url: {{api}}/register/
-  body: none
+  body: multipartForm
   auth: inherit
+}
+
+body:multipart-form {
+  username: Alixon
+  password: Alixon2010
+  password_confirm: Alixon2010
+  profile.phone: 950748830
 }
 
 settings {

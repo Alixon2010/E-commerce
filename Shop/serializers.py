@@ -152,6 +152,3 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
         user.profile.reset_code = ''
         user.profile.save()
         return user
-
-class CardSerializer(serializers.ModelSerializer):
-    pass

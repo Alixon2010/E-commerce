@@ -6,8 +6,13 @@ meta {
 
 post {
   url: {{url}}/api/token/
-  body: none
+  body: multipartForm
   auth: inherit
+}
+
+body:multipart-form {
+  username: admin
+  password: 123
 }
 
 settings {
