@@ -1,4 +1,5 @@
-from rest_framework import viewsets, views, status
+from django.contrib.auth import logout
+from rest_framework import viewsets, views, status, permissions
 from rest_framework.response import Response
 
 from Shop import models, serializers
@@ -24,7 +25,30 @@ class Register(views.APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class UserList(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         users = models.User.objects.all()
         serializer = serializers.UserSerializer(instance=users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class Logout(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        logout(request)
+        return Response({"message": "User logged out!"})
+
+class ResetPassword(views.APIView):
+    def post(self, request):
+        serializer = serializers.ResetPasswordSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+        serializer.save()
+        return Response({"message": "Reset Password send!"})
+
+class ResetPasswordConfirm(views.APIView):
+    def post(self, request):
+        serializer = serializers.ResetPasswordConfirmSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+        serializer.save()
+        return Response({"message": "Password successfully reset!"})

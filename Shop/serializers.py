@@ -1,8 +1,13 @@
+import random
+from typing import reveal_type
+
+from django.core.mail import send_mail
 from django.db import transaction
 from rest_framework import serializers
 
 from Shop import models
 from Shop.models import User, Profile
+from root import settings
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -44,6 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
         exclude = ('groups', 'user_permissions')
+        unique_fields = ('email', 'username')
 
     def validate(self, attrs):
         password = attrs.get('password')
@@ -92,3 +98,57 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+
+    def validate_email(self, value):
+        email = User.objects.filter(email=value).exists()
+        if not email:
+            raise serializers.ValidationError({"message": "Email xato!"})
+        return value
+
+
+    def save(self, **kwargs):
+        email = self.validated_data.get('email')
+        user = User.objects.get(email=email)
+        reset_code = random.randint(100000, 999999)
+        user.profile.reset_code = reset_code
+        user.profile.save()
+        send_mail(
+            'Password Reset Code',
+            f'Reset Code: {reset_code}',
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently = True
+        )
+        return self.instance
+
+class ResetPasswordConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+    reset_code = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs['email']
+        reset_code = attrs['reset_code']
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"message": "Email invalid!"})
+
+        if user.profile.reset_code != reset_code:
+            raise serializers.ValidationError({"message": "Reset code invalid"})
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data['user']
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+
+        user.profile.reset_code = ''
+        user.profile.save()
+        return user
