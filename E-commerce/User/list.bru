@@ -5,17 +5,17 @@ meta {
 }
 
 get {
-  url: {{api}}/users/
+  url: {{api}}/users/?Authorization
   body: none
   auth: inherit
 }
 
 params:query {
-  : 
+  Authorization: 
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1NzEyMjAyLCJpYXQiOjE3NTU3MDE0MDIsImp0aSI6IjBiZWNlYjg5Mzc4NjQyMzBiNGRjMmNjNjNiYzNlZjBmIiwidXNlcl9pZCI6IjEifQ.3o-mMtBI_2tu3F5fNohQGW9NjFdU11nOPddIkCoALR0
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU1ODA1Mzg5LCJpYXQiOjE3NTU3OTQ1ODksImp0aSI6ImE1YmU1MDYwYmMwYTQ5NTY5OTA4YTRhNjUxODYzMjJjIiwidXNlcl9pZCI6IjEifQ.qUleLLY-hBTxMerEFjd1si_AiLzQB1k6oNYD-R7dVrY
 }
 
 settings {
