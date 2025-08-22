@@ -2,7 +2,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.core import validators
-from django.db import models
+from django.db import models, transaction
 
 User = get_user_model()
 
@@ -52,30 +52,37 @@ class Card(models.Model):
         if product.stock < quantity:
             return False
 
+        with transaction.atomic():
+            product.stock -= quantity
+            product.save()
 
-        product.stock -= quantity
-        product.save()
+            card_product, created = CardProduct.objects.get_or_create(card=self, product=product)
 
-        card_product, created = CardProduct.objects.get_or_create(card=self, product=product)
+            if created:
+                card_product.quantity = quantity
+            else:
+                card_product.quantity += quantity
 
-        if created:
-            card_product.quantity = quantity
-        else:
-            card_product.quantity += quantity
-
-        card_product.save()
+            card_product.save()
 
         return True
 
-    def remove_card(self, product):
+    def remove_card(self, product, quantity = None):
         try:
             card_product = CardProduct.objects.get(card=self, product=product)
         except CardProduct.DoesNotExist:
             return False
 
-        product.stock += card_product.quantity
-        card_product.delete()
-        product.save()
+        with transaction.atomic():
+            if quantity is None or quantity >= card_product.quantity:
+                product.stock += card_product.quantity
+                card_product.delete()
+            else:
+                card_product.quantity -= quantity
+                product.stock += quantity
+                card_product.save()
+
+            product.save()
 
         return True
 
