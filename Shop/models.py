@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core import validators
 from django.db import models, transaction
+from django.db.models import UUIDField
 
 User = get_user_model()
 
@@ -86,8 +87,50 @@ class Card(models.Model):
 
         return True
 
+    def __str__(self):
+        return f"{self.user.username}'s Card"
+
 
 class CardProduct(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='card_products')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity}"
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Kutilmoqda"),
+        ("paid", "To'langan"),
+        ("shipped", "Yuborilgan"),
+        ("delivered", "Yetkazilgan"),
+        ("canceled", "Bekor qilingan"),
+    ]
+
+    id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='orders')
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total_price(self):
+        return sum(item.total_price for item in self.products.all())
+
+class OrderedProduct(models.Model):
+    id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='products')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    @property
+    def total_price(self):
+        return self.quantity * self.price
