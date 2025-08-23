@@ -109,7 +109,7 @@ class Order(models.Model):
     ]
 
     id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='orders')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,related_name='orders')
 
     status = models.CharField(
         max_length=20,
