@@ -48,6 +48,10 @@ class Card(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='card', )
 
+    @property
+    def total_price(self):
+        return sum(item.total_price for item in self.card_products.all())
+
     def to_card(self, product, quantity = 1):
 
         if product.stock < quantity:
@@ -95,6 +99,10 @@ class CardProduct(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='card_products')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+
+    @property
+    def total_price(self):
+        return self.product.price * self.quantity
 
     def __str__(self):
         return f"{self.product.name} - {self.quantity}"

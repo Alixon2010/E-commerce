@@ -152,3 +152,61 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
         user.profile.reset_code = ''
         user.profile.save()
         return user
+
+class ToCardSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100)
+    product_id = serializers.UUIDField()
+    quantity = serializers.IntegerField()
+
+    def save(self, **kwargs):
+        try:
+            user = models.User.objects.get(username=self.validated_data['username'])
+        except models.User.DoesNotExist:
+            raise serializers.ValidationError('User not Found')
+
+        try:
+            product = models.Product.objects.get(id=self.validated_data['product_id'])
+        except models.Product.DoesNotExist:
+            raise serializers.ValidationError('Product topilmadi')
+        else:
+            if product.stock < self.validated_data['quantity']:
+                raise serializers.ValidationError('Product bazada kam')
+
+        card, created = models.Card.objects.get_or_create(user=user)
+
+        added = card.to_card(product=product, quantity=self.validated_data['quantity'])
+
+        if not added:
+            raise serializers.ValidationError('Muammo yuz berdi iltimos keyinroq urinib ko`ring')
+
+        self.instance = card
+        return self.instance
+
+class RemoveCardSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100)
+    product_id = serializers.UUIDField()
+    quantity = serializers.IntegerField(required=False, min_value=1)
+
+    def save(self, **kwargs):
+        try:
+            user = models.User.objects.get(username=self.validated_data['username'])
+        except models.User.DoesNotExist:
+            raise serializers.ValidationError('User not Found')
+
+        try:
+            card = models.Card.objects.get(user=user)
+        except models.Card.DoesNotExist:
+            raise serializers.ValidationError('Card not Found')
+
+        try:
+            product = models.Product.objects.get(id=self.validated_data['product_id'])
+        except models.Product.DoesNotExist:
+            raise serializers.ValidationError('Product topilmadi')
+
+        removed = card.remove_card(product=product, quantity=self.validated_data.get('quantity'))
+
+        if not removed:
+            raise serializers.ValidationError('Savatda product topilmadi')
+
+        self.instance = card
+        return self.instance
