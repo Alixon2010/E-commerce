@@ -1,0 +1,21 @@
+meta {
+  name: to_card
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{api}}/to_card/
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  username: admin
+  product_id: 2f5a4c1a-3b1d-4a33-9c18-6b29a1bbf0a
+  quantity: 1
+}
+
+settings {
+  encodeUrl: true
+}

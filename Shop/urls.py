@@ -14,6 +14,8 @@ urlpatterns = [
     path('logout/', views.Logout.as_view()),
     path('reset_password/', views.ResetPassword.as_view()),
     path('reset_password/confirm/', views.ResetPasswordConfirm.as_view()),
+    path('to_card/', views.ToCardView.as_view()),
+    path('remove_card/', views.RemoveCardView.as_view()),
 ]
 
 urlpatterns += router.urls

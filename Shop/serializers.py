@@ -23,11 +23,25 @@ class SubCategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('id', )
 
+    def create(self, validated_data):
+        category = validated_data.pop('category')
+        subcategory = models.SubCategory.objects.create(category=category, **validated_data)
+
+        return subcategory
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Product
         fields = '__all__'
         read_only_fields = ('id', )
+
+    def create(self, validated_data):
+        subcategory = validated_data.pop('subcategory')
+        if not subcategory:
+            raise serializers.ValidationError({"subcategory": "This field is required."})
+        product = models.Product.objects.create(subcategory=subcategory, **validated_data)
+
+        return product
 
 class Card(serializers.ModelSerializer):
     pass
@@ -161,25 +175,25 @@ class ToCardSerializer(serializers.Serializer):
         try:
             user = models.User.objects.get(username=self.validated_data['username'])
         except models.User.DoesNotExist:
-            raise serializers.ValidationError('User not Found')
+            raise serializers.ValidationError({'message' : 'User not Found'})
 
         try:
             product = models.Product.objects.get(id=self.validated_data['product_id'])
         except models.Product.DoesNotExist:
-            raise serializers.ValidationError('Product topilmadi')
+            raise serializers.ValidationError({'message' : 'Product topilmadi'})
         else:
             if product.stock < self.validated_data['quantity']:
-                raise serializers.ValidationError('Product bazada kam')
+                raise serializers.ValidationError({'message' : 'Product bazada kam'})
 
-        card, created = models.Card.objects.get_or_create(user=user)
+        with transaction.atomic():
+            card, created = models.Card.objects.get_or_create(user=user)
 
-        added = card.to_card(product=product, quantity=self.validated_data['quantity'])
+            added = card.to_card(product=product, quantity=self.validated_data['quantity'])
 
         if not added:
-            raise serializers.ValidationError('Muammo yuz berdi iltimos keyinroq urinib ko`ring')
+            raise serializers.ValidationError({'message': 'Muammo yuz berdi iltimos keyinroq urinib ko`ring'})
 
-        self.instance = card
-        return self.instance
+        return card
 
 class RemoveCardSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100)
@@ -190,22 +204,54 @@ class RemoveCardSerializer(serializers.Serializer):
         try:
             user = models.User.objects.get(username=self.validated_data['username'])
         except models.User.DoesNotExist:
-            raise serializers.ValidationError('User not Found')
+            raise serializers.ValidationError({'message': 'User not Found'})
 
         try:
             card = models.Card.objects.get(user=user)
         except models.Card.DoesNotExist:
-            raise serializers.ValidationError('Card not Found')
+            raise serializers.ValidationError({'message': 'Card not Found'})
 
         try:
             product = models.Product.objects.get(id=self.validated_data['product_id'])
         except models.Product.DoesNotExist:
-            raise serializers.ValidationError('Product topilmadi')
+            raise serializers.ValidationError({'message': 'Product topilmadi'})
 
         removed = card.remove_card(product=product, quantity=self.validated_data.get('quantity'))
 
         if not removed:
-            raise serializers.ValidationError('Savatda product topilmadi')
+            raise serializers.ValidationError({'message': 'Savatda product topilmadi'})
 
-        self.instance = card
-        return self.instance
+        return card
+
+class ToOrderSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100)
+
+    def save(self, **kwargs):
+        try:
+            user = models.User.objects.get(username=self.validated_data['username'])
+        except models.User.DoesNotExist:
+            raise serializers.ValidationError({'message': 'User not Found'})
+
+        try:
+            card = models.Card.objects.prefetch_related('card_products__product').get(user=user)
+        except models.Card.DoesNotExist:
+            raise serializers.ValidationError({'message':'Card not Found'})
+
+        with transaction.atomic():
+            order = models.Order.objects.create(user=user)
+
+            order_products=[
+                models.OrderedProduct(
+                    order = order,
+                    product = cp.product,
+                    quantity = cp.quantity,
+                    price = cp.product.price
+                )
+                for cp in card.card_products.all()
+            ]
+
+            models.OrderedProduct.objects.bulk_create(order_products)
+
+            card.card_products.all().delete()
+
+        return order

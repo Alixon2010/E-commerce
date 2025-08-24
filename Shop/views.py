@@ -52,3 +52,22 @@ class ResetPasswordConfirm(views.APIView):
         serializer.is_valid(raise_exception = True)
         serializer.save()
         return Response({"message": "Password successfully reset!"})
+
+class ToCardView(views.APIView):
+    def post(self, request):
+        serializer = serializers.ToCardSerializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+
+        return Response({'message': 'Product savatga qo`shildi'}, status=status.HTTP_200_OK)
+
+
+class RemoveCardView(views.APIView):
+    def post(self, request):
+        serializer = serializers.RemoveCardSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'message': 'Product savatdan olindi'}, status=status.HTTP_200_OK)
+
