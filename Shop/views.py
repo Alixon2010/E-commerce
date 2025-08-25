@@ -1,5 +1,6 @@
 from django.contrib.auth import logout
 from rest_framework import viewsets, views, status, permissions
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from Shop import models, serializers, permissions as custom_perms
@@ -94,3 +95,43 @@ class ChangeOrderStatus(views.APIView):
         order.save()
 
         return Response({'message': 'Status succefuly changed'}, status=status.HTTP_200_OK)
+
+
+class OrderListView(ListAPIView):
+    queryset = models.Order.objects.all()
+    serializer_class = serializers.OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        orders = models.Order.objects.all()
+        serializer = serializers.OrderSerializer(instance=orders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = serializers.OrderSerializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class OrderRetrieveView(RetrieveAPIView):
+    queryset = models.Order.objects.all()
+    serializer_class = serializers.OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        order = models.Order.objects.get(id=pk)
+        serializer = serializers.OrderSerializer(instance=order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        order = models.Order.objects.get(id=pk)
+        serializer = serializers.OrderSerializer(instance=order, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        order = models.Order.objects.get(id=pk)
+        order.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
