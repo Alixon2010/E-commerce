@@ -16,6 +16,8 @@ urlpatterns = [
     path('reset_password/confirm/', views.ResetPasswordConfirm.as_view()),
     path('to_card/', views.ToCardView.as_view()),
     path('remove_card/', views.RemoveCardView.as_view()),
+    path('to_order/', views.ToOrderView.as_view()),
+    path('change_order_status/<str:order_id>/<str:stat>/', views.ChangeOrderStatus.as_view())
 ]
 
 urlpatterns += router.urls

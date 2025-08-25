@@ -132,6 +132,9 @@ class Order(models.Model):
     def total_price(self):
         return sum(item.total_price for item in self.products.all())
 
+    def __str__(self):
+        return f"{self.user.username} - {self.status}"
+
 class OrderedProduct(models.Model):
     id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='products')
@@ -141,3 +144,6 @@ class OrderedProduct(models.Model):
     @property
     def total_price(self):
         return self.quantity * self.product.price
+
+    def __str__(self):
+        return f"{self.product} - {self.quantity}"

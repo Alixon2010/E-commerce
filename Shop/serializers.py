@@ -245,7 +245,6 @@ class ToOrderSerializer(serializers.Serializer):
                     order = order,
                     product = cp.product,
                     quantity = cp.quantity,
-                    price = cp.product.price
                 )
                 for cp in card.card_products.all()
             ]

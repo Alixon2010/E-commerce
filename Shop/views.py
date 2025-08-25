@@ -2,7 +2,7 @@ from django.contrib.auth import logout
 from rest_framework import viewsets, views, status, permissions
 from rest_framework.response import Response
 
-from Shop import models, serializers
+from Shop import models, serializers, permissions as custom_perms
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -71,3 +71,26 @@ class RemoveCardView(views.APIView):
 
         return Response({'message': 'Product savatdan olindi'}, status=status.HTTP_200_OK)
 
+class ToOrderView(views.APIView):
+    def post(self, request):
+        serializer = serializers.ToOrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'message': 'Buyurtma berildi'}, status=status.HTTP_200_OK)
+
+class ChangeOrderStatus(views.APIView):
+
+    def post(self, request, order_id, stat):
+        try:
+            order = models.Order.objects.get(id=order_id)
+        except models.Order.DoesNotExist:
+            return Response({'message': 'Order not Found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if stat not in ["pending", "paid", "shipped", "delivered", "canceled"]:
+            return Response({'message': 'Status xato'}, status=status.HTTP_400_BAD_REQUEST)
+
+        order.status = stat
+        order.save()
+
+        return Response({'message': 'Status succefuly changed'}, status=status.HTTP_200_OK)
