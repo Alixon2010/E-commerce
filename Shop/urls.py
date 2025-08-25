@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from Shop import views
+from Shop.views import OrderListView, OrderRetrieveView
 
 router = DefaultRouter()
 router.register('categories', views.CategoryViewSet)
@@ -17,10 +18,10 @@ urlpatterns = [
     path('to_card/', views.ToCardView.as_view()),
     path('remove_card/', views.RemoveCardView.as_view()),
     path('to_order/', views.ToOrderView.as_view()),
-    path('change_order_status/<str:order_id>/<str:stat>/', views.ChangeOrderStatus.as_view())
+    path('change_order_status/<str:order_id>/<str:stat>/', views.ChangeOrderStatus.as_view()),
 
     path("orders/",OrderListView.as_view()),
-    path("orders/<order_user_id:pk>/",OrderRetrieveView.as_view()),
+    path("orders/<uuid:pk>/",OrderRetrieveView.as_view()),
 
 ]
 
