@@ -1,11 +1,11 @@
 meta {
-  name: Delete
+  name: change_order_status
   type: http
-  seq: 5
+  seq: 2
 }
 
-delete {
-  url: {{api}}/subcategories/1/
+post {
+  url: {{api}}/change_order_status/
   body: none
   auth: inherit
 }
