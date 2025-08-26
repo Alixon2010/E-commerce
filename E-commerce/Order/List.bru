@@ -1,0 +1,19 @@
+meta {
+  name: List
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{api}}/orders/
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU2MTk0ODg0LCJpYXQiOjE3NTYxODQwODQsImp0aSI6IjlhZDQ3NjM4ZWM2ODQzM2E4ZjdiYTY4ZDg3NWZjYTUxIiwidXNlcl9pZCI6IjIifQ.jY9hRbg57HDUyx_QvDIIH9gYDsRHSy9EBUrG8wNeOIE
+}
+
+settings {
+  encodeUrl: true
+}
