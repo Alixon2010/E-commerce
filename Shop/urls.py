@@ -21,7 +21,9 @@ urlpatterns = [
     path('change_order_status/', views.ChangeOrderStatus.as_view()),
 
     path("orders/",OrderListView.as_view()),
-    path("orders/<uuid:pk>/",OrderRetrieveView.as_view())
+    path("orders/<uuid:pk>/",OrderRetrieveView.as_view()),
+    path("card/", views.CardListView.as_view()),
+    path("card/<uuid:pk>", views.CardRetriveView.as_view())
 
 ]
 

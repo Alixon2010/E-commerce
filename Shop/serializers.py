@@ -178,7 +178,7 @@ class CardSerializer(serializers.Serializer):
             "user": user.username,
             "products": [
                 {
-                    "id": product.id,
+                    "id": product.product.id,
                     "name": product.product.name,
                     "quantity": product.quantity
                 }
