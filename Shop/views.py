@@ -1,5 +1,6 @@
 from django.contrib.auth import logout
 from rest_framework import viewsets, views, status, permissions
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from Shop import models, serializers, permissions as custom_perms
@@ -94,3 +95,15 @@ class ChangeOrderStatus(views.APIView):
         order.save()
 
         return Response({'message': 'Status succefuly changed'}, status=status.HTTP_200_OK)
+
+
+class OrderListView(ListAPIView):
+    queryset = models.Order.objects.all().prefetch_related('products__product')
+    serializer_class = serializers.OrderSerializer
+    permission_classes = [custom_perms.IsStaff]
+
+
+class OrderRetrieveView(RetrieveAPIView):
+    queryset = models.Order.objects.all().prefetch_related('products__product')
+    serializer_class = serializers.OrderSerializer
+    permission_classes = [custom_perms.IsStaffOrOwner]

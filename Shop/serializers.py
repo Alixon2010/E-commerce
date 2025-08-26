@@ -254,3 +254,29 @@ class ToOrderSerializer(serializers.Serializer):
             card.card_products.all().delete()
 
         return order
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Order
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.user:
+            data['user'] = instance.user.username
+        else:
+            data['user'] = None
+
+        data['status_display'] = instance.get_status_display()
+        data['total_price'] = instance.total_price
+        data['products'] = [
+            {
+                'product': item.product.name,
+                'quantity': item.quantity,
+                'price': item.product.price,
+                'total_price': item.total_price,
+            }
+            for item in instance.products.all()
+        ]
+        return data
