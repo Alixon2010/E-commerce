@@ -152,3 +152,23 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
         user.profile.reset_code = ''
         user.profile.save()
         return user
+
+class CardSerializer(serializers.Serializer):
+    user = UserSerializer()
+    product_id = serializers.IntegerField()
+    name = serializers.CharField()
+    quantity = serializers.IntegerField()
+
+    def to_representation(self, instance):
+        user = instance.user
+        return {
+            "user": user.username,
+            "products": [
+                {
+                    "id": product.id,
+                    "name": product.product.name,
+                    "quantity": product.quantity
+                }
+                for product in instance.card_products.all()
+            ]
+        }

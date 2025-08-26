@@ -1,5 +1,6 @@
 from django.contrib.auth import logout
 from rest_framework import viewsets, views, status, permissions
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from Shop import models, serializers
@@ -52,3 +53,11 @@ class ResetPasswordConfirm(views.APIView):
         serializer.is_valid(raise_exception = True)
         serializer.save()
         return Response({"message": "Password successfully reset!"})
+
+class CardListView(ListAPIView):
+    model = models.Card
+    serializer_class = serializers.CardSerializer
+
+class CardRetriveView(RetrieveAPIView):
+    queryset = models.Card.objects.all().prefetch_related('card_products__products')
+    serializer_class = serializers.CardSerializer
