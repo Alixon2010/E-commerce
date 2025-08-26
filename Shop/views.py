@@ -54,6 +54,14 @@ class ResetPasswordConfirm(views.APIView):
         serializer.save()
         return Response({"message": "Password successfully reset!"})
 
+class CardListView(ListAPIView):
+    queryset = models.Card.objects.all().prefetch_related('card_products__product')
+    serializer_class = serializers.CardSerializer
+
+class CardRetriveView(RetrieveAPIView):
+    queryset = models.Card.objects.all().prefetch_related('card_products__product')
+    serializer_class = serializers.CardSerializer
+
 class ToCardView(views.APIView):
     def post(self, request):
         serializer = serializers.ToCardSerializer(data = request.data)
@@ -62,7 +70,6 @@ class ToCardView(views.APIView):
 
 
         return Response({'message': 'Product savatga qo`shildi'}, status=status.HTTP_200_OK)
-
 
 class RemoveCardView(views.APIView):
     def post(self, request):
