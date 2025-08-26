@@ -55,9 +55,9 @@ class ResetPasswordConfirm(views.APIView):
         return Response({"message": "Password successfully reset!"})
 
 class CardListView(ListAPIView):
-    model = models.Card
+    queryset = models.Card.objects.all().prefetch_related('card_products__product')
     serializer_class = serializers.CardSerializer
 
 class CardRetriveView(RetrieveAPIView):
-    queryset = models.Card.objects.all().prefetch_related('card_products__products')
+    queryset = models.Card.objects.all().prefetch_related('card_products__product')
     serializer_class = serializers.CardSerializer
