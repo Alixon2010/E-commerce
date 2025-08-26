@@ -280,3 +280,20 @@ class OrderSerializer(serializers.ModelSerializer):
             for item in instance.products.all()
         ]
         return data
+
+class ChangeOrderStatusSerializer(serializers.Serializer):
+    order_id = serializers.UUIDField()
+    status = serializers.CharField(max_length=10)
+
+    def save(self, **kwargs):
+        try:
+            order = models.Order.objects.get(id=self.validated_data['order_id'])
+        except models.Order.DoesNotExist:
+            raise serializers.ValidationError({'message': 'Order not Found'})
+
+        if self.validated_data['status'] not in ["pending", "paid", "shipped", "delivered", "canceled"]:
+            raise serializers.ValidationError({'message': 'Status xato'})
+
+        order.status = self.validated_data['status']
+        order.save()
+        return order
