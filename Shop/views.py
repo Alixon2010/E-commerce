@@ -82,18 +82,10 @@ class ToOrderView(views.APIView):
 
 class ChangeOrderStatus(views.APIView):
 
-    def post(self, request, order_id, stat):
-        try:
-            order = models.Order.objects.get(id=order_id)
-        except models.Order.DoesNotExist:
-            return Response({'message': 'Order not Found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if stat not in ["pending", "paid", "shipped", "delivered", "canceled"]:
-            return Response({'message': 'Status xato'}, status=status.HTTP_400_BAD_REQUEST)
-
-        order.status = stat
-        order.save()
-
+    def post(self, request):
+        serializer = serializers.ChangeOrderStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response({'message': 'Status succefuly changed'}, status=status.HTTP_200_OK)
 
 
