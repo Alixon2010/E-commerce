@@ -187,14 +187,13 @@ class CardSerializer(serializers.Serializer):
         }
       
 class ToCardSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=100)
     product_id = serializers.UUIDField()
     quantity = serializers.IntegerField()
 
     def save(self, **kwargs):
         try:
-            user = models.User.objects.get(username=self.validated_data['username'])
-        except models.User.DoesNotExist:
+            user = self.context['user']
+        except KeyError:
             raise serializers.ValidationError({'message' : 'User not Found'})
 
         try:
@@ -216,14 +215,13 @@ class ToCardSerializer(serializers.Serializer):
         return card
 
 class RemoveCardSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=100)
     product_id = serializers.UUIDField()
     quantity = serializers.IntegerField(required=False, min_value=1)
 
     def save(self, **kwargs):
         try:
-            user = models.User.objects.get(username=self.validated_data['username'])
-        except models.User.DoesNotExist:
+            user = self.context['user']
+        except KeyError:
             raise serializers.ValidationError({'message': 'User not Found'})
 
         try:
@@ -244,36 +242,37 @@ class RemoveCardSerializer(serializers.Serializer):
         return card
 
 class ToOrderSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=100)
-
     def save(self, **kwargs):
         try:
-            user = models.User.objects.get(username=self.validated_data['username'])
-        except models.User.DoesNotExist:
+            user = self.context['user']
+        except KeyError:
             raise serializers.ValidationError({'message': 'User not Found'})
+
+        if not user.is_authenticated:
+            raise serializers.ValidationError({'message': 'User not authenticated'})
 
         try:
             card = models.Card.objects.prefetch_related('card_products__product').get(user=user)
         except models.Card.DoesNotExist:
-            raise serializers.ValidationError({'message':'Card not Found'})
+            raise serializers.ValidationError({'message': 'Card not Found'})
 
         with transaction.atomic():
             order = models.Order.objects.create(user=user)
 
-            order_products=[
+            order_products = [
                 models.OrderedProduct(
-                    order = order,
-                    product = cp.product,
-                    quantity = cp.quantity,
+                    order=order,
+                    product=cp.product,
+                    quantity=cp.quantity,
                 )
                 for cp in card.card_products.all()
             ]
-
             models.OrderedProduct.objects.bulk_create(order_products)
 
             card.card_products.all().delete()
 
         return order
+
 
 
 class OrderSerializer(serializers.ModelSerializer):
