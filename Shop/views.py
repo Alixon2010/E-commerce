@@ -26,8 +26,6 @@ class Register(views.APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class UserList(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request):
         users = models.User.objects.all()
         serializer = serializers.UserSerializer(instance=users, many=True)
@@ -63,33 +61,38 @@ class CardRetriveView(RetrieveAPIView):
     serializer_class = serializers.CardSerializer
 
 class ToCardView(views.APIView):
+    permission_classes = [custom_perms.IsClient]
     def post(self, request):
         serializer = serializers.ToCardSerializer(
             data=request.data,
-            context={'request': request}
+            context={'user': request.user}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'message': 'Product savatga qo`shildi'}, status=status.HTTP_200_OK)
 
 class RemoveCardView(views.APIView):
+    permission_classes = [custom_perms.IsClient]
+
     def post(self, request):
-        serializer = serializers.RemoveCardSerializer(data=request.data)
+        serializer = serializers.RemoveCardSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response({'message': 'Product savatdan olindi'}, status=status.HTTP_200_OK)
 
 class ToOrderView(views.APIView):
+    permission_classes = [custom_perms.IsClient]
+
     def post(self, request):
-        serializer = serializers.ToOrderSerializer(data=request.data)
+        serializer = serializers.ToOrderSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response({'message': 'Buyurtma berildi'}, status=status.HTTP_200_OK)
 
 class ChangeOrderStatus(views.APIView):
-
+    permission_classes = [custom_perms.IsStaff]
     def post(self, request):
         serializer = serializers.ChangeOrderStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

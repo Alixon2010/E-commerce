@@ -187,14 +187,13 @@ class CardSerializer(serializers.Serializer):
         }
       
 class ToCardSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=100)
     product_id = serializers.UUIDField()
     quantity = serializers.IntegerField()
 
     def save(self, **kwargs):
         try:
-            user = models.User.objects.get(username=self.validated_data['username'])
-        except models.User.DoesNotExist:
+            user = self.context['user']
+        except KeyError:
             raise serializers.ValidationError({'message' : 'User not Found'})
 
         try:
@@ -216,14 +215,13 @@ class ToCardSerializer(serializers.Serializer):
         return card
 
 class RemoveCardSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=100)
     product_id = serializers.UUIDField()
     quantity = serializers.IntegerField(required=False, min_value=1)
 
     def save(self, **kwargs):
         try:
-            user = models.User.objects.get(username=self.validated_data['username'])
-        except models.User.DoesNotExist:
+            user = self.context['user']
+        except KeyError:
             raise serializers.ValidationError({'message': 'User not Found'})
 
         try:
@@ -245,9 +243,12 @@ class RemoveCardSerializer(serializers.Serializer):
 
 class ToOrderSerializer(serializers.Serializer):
     def save(self, **kwargs):
-        user = self.context['request'].user
+        try:
+            user = self.context['user']
+        except KeyError:
+            raise serializers.ValidationError({'message': 'User not Found'})
 
-        if not user or not user.is_authenticated:
+        if not user.is_authenticated:
             raise serializers.ValidationError({'message': 'User not authenticated'})
 
         try:
