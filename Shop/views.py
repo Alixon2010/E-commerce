@@ -64,11 +64,12 @@ class CardRetriveView(RetrieveAPIView):
 
 class ToCardView(views.APIView):
     def post(self, request):
-        serializer = serializers.ToCardSerializer(data = request.data)
+        serializer = serializers.ToCardSerializer(
+            data=request.data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-
         return Response({'message': 'Product savatga qo`shildi'}, status=status.HTTP_200_OK)
 
 class RemoveCardView(views.APIView):
