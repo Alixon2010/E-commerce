@@ -1,20 +1,17 @@
 meta {
-  name: Login
+  name: Create
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
-  url: {{url}}/api/token/
+  url: {{api}}/categories/
   body: multipartForm
   auth: inherit
 }
 
 body:multipart-form {
-  username: Alixon
-  password: Alixon2010
-  ~username: admin
-  ~password: 123
+  name: Ovqat
 }
 
 settings {

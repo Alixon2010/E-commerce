@@ -1,20 +1,19 @@
 meta {
-  name: Login
+  name: to_card
   type: http
   seq: 1
 }
 
 post {
-  url: {{url}}/api/token/
+  url: {{api}}/to_card/
   body: multipartForm
   auth: inherit
 }
 
 body:multipart-form {
-  username: Alixon
-  password: Alixon2010
-  ~username: admin
-  ~password: 123
+  username: admin
+  product_id: a0e1cda8-4cf6-469c-884a-eda462fdeae5
+  quantity: 1
 }
 
 settings {

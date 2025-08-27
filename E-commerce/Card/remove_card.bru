@@ -1,0 +1,21 @@
+meta {
+  name: remove_card
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api}}/to_card/
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  username: admin
+  product_id: a0e1cda8-4cf6-469c-884a-eda462fdeae5
+  quantity: 50
+}
+
+settings {
+  encodeUrl: true
+}
