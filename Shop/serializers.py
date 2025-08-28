@@ -49,7 +49,7 @@ class Card(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Profile
-        exclude = ('user', )
+        exclude = ('user', 'reset_code')
         read_only_fields = ('id', )
 
 class UserSerializer(serializers.ModelSerializer):
