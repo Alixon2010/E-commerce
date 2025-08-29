@@ -1,4 +1,5 @@
 from django.contrib.auth import logout
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, views, status, permissions
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
@@ -28,7 +29,7 @@ class Register(views.APIView):
 class UserList(views.APIView):
     def get(self, request):
         users = models.User.objects.all()
-        serializer = serializers.UserSerializer(instance=users, many=True)
+        serializer = serializers.UserSerializer(instance=users, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class Logout(views.APIView):
@@ -62,6 +63,11 @@ class CardRetriveView(RetrieveAPIView):
 
 class ToCardView(views.APIView):
     permission_classes = [custom_perms.IsClient]
+
+    @swagger_auto_schema(
+        request_body=serializers.ToCardSerializer,
+        responses={200: "Savatga qo'shildi"}
+    )
     def post(self, request):
         serializer = serializers.ToCardSerializer(
             data=request.data,
@@ -74,6 +80,10 @@ class ToCardView(views.APIView):
 class RemoveCardView(views.APIView):
     permission_classes = [custom_perms.IsClient]
 
+    @swagger_auto_schema(
+        request_body=serializers.RemoveCardSerializer,
+        responses={200: 'savatdan olindi'}
+    )
     def post(self, request):
         serializer = serializers.RemoveCardSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
@@ -84,6 +94,10 @@ class RemoveCardView(views.APIView):
 class ToOrderView(views.APIView):
     permission_classes = [custom_perms.IsClient]
 
+    @swagger_auto_schema(
+        request_body=serializers.ToOrderSerializer,
+        responses={200: 'buyurtma berildi'}
+    )
     def post(self, request):
         serializer = serializers.ToOrderSerializer(data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
@@ -93,6 +107,11 @@ class ToOrderView(views.APIView):
 
 class ChangeOrderStatus(views.APIView):
     permission_classes = [custom_perms.IsStaff]
+
+    @swagger_auto_schema(
+        request_body=serializers.ChangeOrderStatusSerializer,
+        responses={200: 'Status succefuly changed'}
+    )
     def post(self, request):
         serializer = serializers.ChangeOrderStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
