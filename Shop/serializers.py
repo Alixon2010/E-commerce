@@ -112,6 +112,24 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+    def to_representation(self, instance):
+        data  = super().to_representation(instance)
+        request = self.context.get('request', False)
+        if not request:
+            return data
+
+        profile = instance.profile if hasattr(instance, 'profile') else None
+        img = profile.img if profile else None
+        img_url = img.url if img else None
+
+        full_img_url = request.build_absolute_uri(img_url) if request and img_url else False
+
+        if not full_img_url:
+            return data
+
+        data['profile']['img'] = full_img_url
+        return data
+
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
 

@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 
 from django.forms.widgets import Media
 
-
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,6 +52,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_cleanup.apps.CleanupConfig',
+
+    # documentation
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -132,7 +134,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 
