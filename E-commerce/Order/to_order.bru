@@ -1,0 +1,24 @@
+meta {
+  name: to_order
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{api}}/to_order/
+  body: multipartForm
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU2NTU3MjY1LCJpYXQiOjE3NTY1NDY0NjUsImp0aSI6IjAyNTMwMTcwZTc5ODRkYmRiN2EyM2YyNjc4ZDVkYzQ0IiwidXNlcl9pZCI6IjEifQ.VuoVimdxJdbUm0v9Y6aMvZ_4Z5SvOdJ3-L_nN2IJY6E
+}
+
+body:multipart-form {
+  latitude: 6.432432
+  longitude: 6.432232
+}
+
+settings {
+  encodeUrl: true
+}

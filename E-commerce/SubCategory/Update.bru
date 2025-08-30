@@ -1,0 +1,15 @@
+meta {
+  name: Update
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{api}}/subcategories/1/
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
