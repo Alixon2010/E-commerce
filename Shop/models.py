@@ -125,6 +125,9 @@ class Order(models.Model):
         default="pending"
     )
 
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

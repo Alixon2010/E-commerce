@@ -2,7 +2,7 @@ import random
 
 from django.core.mail import send_mail
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import serializers, validators
 
 from Shop import models
 from Shop.models import User, Profile
@@ -43,9 +43,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
         return product
 
-class Card(serializers.ModelSerializer):
-    pass
-
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Profile
@@ -62,7 +59,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
         exclude = ('groups', 'user_permissions')
-        unique_fields = ('email', 'username')
+        extra_kwargs = {
+            'email': {'validators': [validators.UniqueValidator(queryset=models.User.objects.all())]},
+            'username': {'validators': [validators.UniqueValidator(queryset=models.User.objects.all())]},
+        }
 
     def validate(self, attrs):
         password = attrs.get('password')
@@ -260,13 +260,22 @@ class RemoveCardSerializer(serializers.Serializer):
         return card
 
 class ToOrderSerializer(serializers.Serializer):
-    def save(self, **kwargs):
-        try:
-            user = self.context['user']
-        except KeyError:
-            raise serializers.ValidationError({'message': 'User not Found'})
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
 
-        if not user.is_authenticated:
+    def validate_latitude(self, value):
+        if not -90 <= value <= 90:
+            raise serializers.ValidationError("Kenglik -90 va 90 oralig'ida bo'lishi kerak")
+        return value
+
+    def validate_longitude(self, value):
+        if not -180 <= value <= 180:
+            raise serializers.ValidationError("Uzunlik -180 va 180 oralig'ida bo'lishi kerak")
+        return value
+
+    def save(self, **kwargs):
+        user = self.context.get('user')
+        if not user or not user.is_authenticated:
             raise serializers.ValidationError({'message': 'User not authenticated'})
 
         try:
@@ -275,7 +284,11 @@ class ToOrderSerializer(serializers.Serializer):
             raise serializers.ValidationError({'message': 'Card not Found'})
 
         with transaction.atomic():
-            order = models.Order.objects.create(user=user)
+            order = models.Order.objects.create(
+                user=user,
+                latitude=self.validated_data['latitude'],
+                longitude=self.validated_data['longitude']
+            )
 
             order_products = [
                 models.OrderedProduct(
@@ -294,33 +307,45 @@ class ToOrderSerializer(serializers.Serializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    total_price = serializers.SerializerMethodField()
+    products = serializers.SerializerMethodField()
+
     class Meta:
         model = models.Order
         fields = '__all__'
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if instance.user:
-            data['user'] = instance.user.username
-        else:
-            data['user'] = None
+    def get_user(self, obj):
+        return obj.user.username if obj.user else None
 
-        data['status_display'] = instance.get_status_display()
-        data['total_price'] = instance.total_price
-        data['products'] = [
+    def get_total_price(self, obj):
+        return obj.total_price
+
+    def get_products(self, obj):
+        return [
             {
                 'product': item.product.name,
                 'quantity': item.quantity,
                 'price': item.product.price,
                 'total_price': item.total_price,
             }
-            for item in instance.products.all()
+            for item in obj.products.all()
         ]
-        return data
+
+    def validate_latitude(self, value):
+        if not -90 <= value <= 90:
+            raise serializers.ValidationError("Kenglik -90 va 90 oralig'ida bo'lishi kerak")
+        return value
+
+    def validate_longitude(self, value):
+        if not -180 <= value <= 180:
+            raise serializers.ValidationError("Uzunlik -180 va 180 oralig'ida bo'lishi kerak")
+        return value
 
 class ChangeOrderStatusSerializer(serializers.Serializer):
     order_id = serializers.UUIDField()
-    status = serializers.CharField(max_length=10)
+    status = serializers.ChoiceField(choices=[c[0] for c in models.Order.STATUS_CHOICES])
 
     def save(self, **kwargs):
         try:
