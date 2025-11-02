@@ -4,106 +4,128 @@ from django.core.mail import send_mail
 from django.db import transaction
 from rest_framework import serializers, validators
 
-from Shop import models
-from Shop.models import User, Profile
 from root import settings
+from Shop import models
+from Shop.models import Profile, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Category
-        fields = '__all__'
-        read_only_fields = ('id',)
+        fields = "__all__"
+        read_only_fields = ("id",)
+
 
 class SubCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.SubCategory
-        fields = '__all__'
-        read_only_fields = ('id', )
+        fields = "__all__"
+        read_only_fields = ("id",)
 
     def create(self, validated_data):
-        category = validated_data.pop('category')
-        subcategory = models.SubCategory.objects.create(category=category, **validated_data)
+        category = validated_data.pop("category")
+        subcategory = models.SubCategory.objects.create(
+            category=category, **validated_data
+        )
 
         return subcategory
+
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Product
-        fields = '__all__'
-        read_only_fields = ('id', )
+        fields = "__all__"
+        read_only_fields = ("id",)
 
     def create(self, validated_data):
-        subcategory = validated_data.pop('subcategory')
+        subcategory = validated_data.pop("subcategory")
         if not subcategory:
-            raise serializers.ValidationError({"subcategory": "This field is required."})
-        product = models.Product.objects.create(subcategory=subcategory, **validated_data)
+            raise serializers.ValidationError(
+                {"subcategory": "This field is required."}
+            )
+        product = models.Product.objects.create(
+            subcategory=subcategory, **validated_data
+        )
 
         return product
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Profile
-        exclude = ('user', 'reset_code')
-        read_only_fields = ('id', )
+        exclude = ("user", "reset_code")
+        read_only_fields = ("id",)
+
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
     password = serializers.CharField(max_length=128, write_only=True)
-    password_confirm = serializers.CharField(write_only=True, error_messages={
-        "required": "Bu maydon kiritilishi zarur"
-    })
+    password_confirm = serializers.CharField(
+        write_only=True, error_messages={"required": "Bu maydon kiritilishi zarur"}
+    )
 
     class Meta:
         model = models.User
-        exclude = ('groups', 'user_permissions')
+        exclude = ("groups", "user_permissions", "is_superuser", "is_staff", "is_active", "last_login", "date_joined")
         extra_kwargs = {
-            'email': {'validators': [validators.UniqueValidator(queryset=models.User.objects.all())]},
-            'username': {'validators': [validators.UniqueValidator(queryset=models.User.objects.all())]},
+            "email": {
+                "validators": [
+                    validators.UniqueValidator(queryset=models.User.objects.all())
+                ]
+            },
+            "username": {
+                "validators": [
+                    validators.UniqueValidator(queryset=models.User.objects.all())
+                ]
+            },
         }
 
     def validate(self, attrs):
-        password = attrs.get('password')
-        password_confirm = attrs.get('password_confirm')
+        password = attrs.get("password")
+        password_confirm = attrs.get("password_confirm")
 
         if not password:
-            raise serializers.ValidationError({'message': 'Passwordni kiriting'})
+            raise serializers.ValidationError({"message": "Passwordni kiriting"})
 
         if not password_confirm:
-            raise serializers.ValidationError({'message': 'Password konfirmni kiriting'})
+            raise serializers.ValidationError(
+                {"message": "Password konfirmni kiriting"}
+            )
 
         if password != password_confirm:
-            raise serializers.ValidationError({'message': 'Password confirm va Password mos kelmadi'})
+            raise serializers.ValidationError(
+                {"message": "Password confirm va Password mos kelmadi"}
+            )
 
         return attrs
 
     def create(self, validated_data):
-        profile = validated_data.pop('profile')
-        password = validated_data.pop('password')
-        validated_data.pop('password_confirm')
+        profile = validated_data.pop("profile")
+        password = validated_data.pop("password")
+        validated_data.pop("password_confirm")
 
         with transaction.atomic():
             user = models.User.objects.create(**validated_data)
             user.set_password(password)
             user.is_active = True
             user.save()
-            Profile.objects.create(user = user, **profile)
+            Profile.objects.create(user=user, **profile)
 
         return user
 
     def update(self, instance, validated_data):
-        profile = validated_data.get('profile')
+        profile = validated_data.get("profile")
         if profile is not None:
-            profile = validated_data.pop('profile')
+            profile = validated_data.pop("profile")
             instance_profile = instance.profile
             for field, value in profile.items():
                 setattr(instance_profile, field, value)
             instance_profile.save()
 
         for field, value in validated_data.items():
-            if 'password' == field:
+            if "password" == field:
                 instance.set_password(value)
             else:
                 setattr(instance, field, value)
@@ -113,22 +135,25 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        data  = super().to_representation(instance)
-        request = self.context.get('request', False)
+        data = super().to_representation(instance)
+        request = self.context.get("request", False)
         if not request:
             return data
 
-        profile = instance.profile if hasattr(instance, 'profile') else None
+        profile = instance.profile if hasattr(instance, "profile") else None
         img = profile.img if profile else None
         img_url = img.url if img else None
 
-        full_img_url = request.build_absolute_uri(img_url) if request and img_url else False
+        full_img_url = (
+            request.build_absolute_uri(img_url) if request and img_url else False
+        )
 
         if not full_img_url:
             return data
 
-        data['profile']['img'] = full_img_url
+        data["profile"]["img"] = full_img_url
         return data
+
 
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
@@ -139,21 +164,21 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"message": "Email xato!"})
         return value
 
-
     def save(self, **kwargs):
-        email = self.validated_data.get('email')
+        email = self.validated_data.get("email")
         user = User.objects.get(email=email)
         reset_code = random.randint(100000, 999999)
         user.profile.reset_code = reset_code
         user.profile.save()
         send_mail(
-            'Password Reset Code',
-            f'Reset Code: {reset_code}',
+            "Password Reset Code",
+            f"Reset Code: {reset_code}",
             settings.EMAIL_HOST_USER,
             [email],
-            fail_silently = True
+            fail_silently=True,
         )
         return self.instance
+
 
 class ResetPasswordConfirmSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
@@ -161,8 +186,8 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        email = attrs['email']
-        reset_code = attrs['reset_code']
+        email = attrs["email"]
+        reset_code = attrs["reset_code"]
 
         try:
             user = User.objects.get(email=email)
@@ -172,17 +197,18 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
         if user.profile.reset_code != reset_code:
             raise serializers.ValidationError({"message": "Reset code invalid"})
 
-        attrs['user'] = user
+        attrs["user"] = user
         return attrs
 
     def save(self, **kwargs):
-        user = self.validated_data['user']
-        user.set_password(self.validated_data['new_password'])
+        user = self.validated_data["user"]
+        user.set_password(self.validated_data["new_password"])
         user.save()
 
-        user.profile.reset_code = ''
+        user.profile.reset_code = ""
         user.profile.save()
         return user
+
 
 class CardSerializer(serializers.Serializer):
     user = UserSerializer()
@@ -198,39 +224,45 @@ class CardSerializer(serializers.Serializer):
                 {
                     "id": product.product.id,
                     "name": product.product.name,
-                    "quantity": product.quantity
+                    "quantity": product.quantity,
                 }
                 for product in instance.card_products.all()
-            ]
+            ],
         }
-      
+
+
 class ToCardSerializer(serializers.Serializer):
     product_id = serializers.UUIDField()
     quantity = serializers.IntegerField()
 
     def save(self, **kwargs):
         try:
-            user = self.context['user']
+            user = self.context["user"]
         except KeyError:
-            raise serializers.ValidationError({'message' : 'User not Found'})
+            raise serializers.ValidationError({"message": "User not Found"})
 
         try:
-            product = models.Product.objects.get(id=self.validated_data['product_id'])
+            product = models.Product.objects.get(id=self.validated_data["product_id"])
         except models.Product.DoesNotExist:
-            raise serializers.ValidationError({'message' : 'Product topilmadi'})
+            raise serializers.ValidationError({"message": "Product topilmadi"})
         else:
-            if product.stock < self.validated_data['quantity']:
-                raise serializers.ValidationError({'message' : 'Product bazada kam'})
+            if product.stock < self.validated_data["quantity"]:
+                raise serializers.ValidationError({"message": "Product bazada kam"})
 
         with transaction.atomic():
             card, created = models.Card.objects.get_or_create(user=user)
 
-            added = card.to_card(product=product, quantity=self.validated_data['quantity'])
+            added = card.to_card(
+                product=product, quantity=self.validated_data["quantity"]
+            )
 
         if not added:
-            raise serializers.ValidationError({'message': 'Muammo yuz berdi iltimos keyinroq urinib ko`ring'})
+            raise serializers.ValidationError(
+                {"message": "Muammo yuz berdi iltimos keyinroq urinib ko`ring"}
+            )
 
         return card
+
 
 class RemoveCardSerializer(serializers.Serializer):
     product_id = serializers.UUIDField()
@@ -238,26 +270,29 @@ class RemoveCardSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         try:
-            user = self.context['user']
+            user = self.context["user"]
         except KeyError:
-            raise serializers.ValidationError({'message': 'User not Found'})
+            raise serializers.ValidationError({"message": "User not Found"})
 
         try:
             card = models.Card.objects.get(user=user)
         except models.Card.DoesNotExist:
-            raise serializers.ValidationError({'message': 'Card not Found'})
+            raise serializers.ValidationError({"message": "Card not Found"})
 
         try:
-            product = models.Product.objects.get(id=self.validated_data['product_id'])
+            product = models.Product.objects.get(id=self.validated_data["product_id"])
         except models.Product.DoesNotExist:
-            raise serializers.ValidationError({'message': 'Product topilmadi'})
+            raise serializers.ValidationError({"message": "Product topilmadi"})
 
-        removed = card.remove_card(product=product, quantity=self.validated_data.get('quantity'))
+        removed = card.remove_card(
+            product=product, quantity=self.validated_data.get("quantity")
+        )
 
         if not removed:
-            raise serializers.ValidationError({'message': 'Savatda product topilmadi'})
+            raise serializers.ValidationError({"message": "Savatda product topilmadi"})
 
         return card
+
 
 class ToOrderSerializer(serializers.Serializer):
     latitude = serializers.FloatField()
@@ -265,29 +300,35 @@ class ToOrderSerializer(serializers.Serializer):
 
     def validate_latitude(self, value):
         if not -90 <= value <= 90:
-            raise serializers.ValidationError("Kenglik -90 va 90 oralig'ida bo'lishi kerak")
+            raise serializers.ValidationError(
+                "Kenglik -90 va 90 oralig'ida bo'lishi kerak"
+            )
         return value
 
     def validate_longitude(self, value):
         if not -180 <= value <= 180:
-            raise serializers.ValidationError("Uzunlik -180 va 180 oralig'ida bo'lishi kerak")
+            raise serializers.ValidationError(
+                "Uzunlik -180 va 180 oralig'ida bo'lishi kerak"
+            )
         return value
 
     def save(self, **kwargs):
-        user = self.context.get('user')
+        user = self.context.get("user")
         if not user or not user.is_authenticated:
-            raise serializers.ValidationError({'message': 'User not authenticated'})
+            raise serializers.ValidationError({"message": "User not authenticated"})
 
         try:
-            card = models.Card.objects.prefetch_related('card_products__product').get(user=user)
+            card = models.Card.objects.prefetch_related("card_products__product").get(
+                user=user
+            )
         except models.Card.DoesNotExist:
-            raise serializers.ValidationError({'message': 'Card not Found'})
+            raise serializers.ValidationError({"message": "Card not Found"})
 
         with transaction.atomic():
             order = models.Order.objects.create(
                 user=user,
-                latitude=self.validated_data['latitude'],
-                longitude=self.validated_data['longitude']
+                latitude=self.validated_data["latitude"],
+                longitude=self.validated_data["longitude"],
             )
 
             order_products = [
@@ -305,16 +346,15 @@ class ToOrderSerializer(serializers.Serializer):
         return order
 
 
-
 class OrderSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
     total_price = serializers.SerializerMethodField()
     products = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Order
-        fields = '__all__'
+        fields = "__all__"
 
     def get_user(self, obj):
         return obj.user.username if obj.user else None
@@ -325,37 +365,50 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_products(self, obj):
         return [
             {
-                'product': item.product.name,
-                'quantity': item.quantity,
-                'price': item.product.price,
-                'total_price': item.total_price,
+                "product": item.product.name,
+                "quantity": item.quantity,
+                "price": item.product.price,
+                "total_price": item.total_price,
             }
             for item in obj.products.all()
         ]
 
     def validate_latitude(self, value):
         if not -90 <= value <= 90:
-            raise serializers.ValidationError("Kenglik -90 va 90 oralig'ida bo'lishi kerak")
+            raise serializers.ValidationError(
+                "Kenglik -90 va 90 oralig'ida bo'lishi kerak"
+            )
         return value
 
     def validate_longitude(self, value):
         if not -180 <= value <= 180:
-            raise serializers.ValidationError("Uzunlik -180 va 180 oralig'ida bo'lishi kerak")
+            raise serializers.ValidationError(
+                "Uzunlik -180 va 180 oralig'ida bo'lishi kerak"
+            )
         return value
+
 
 class ChangeOrderStatusSerializer(serializers.Serializer):
     order_id = serializers.UUIDField()
-    status = serializers.ChoiceField(choices=[c[0] for c in models.Order.STATUS_CHOICES])
+    status = serializers.ChoiceField(
+        choices=[c[0] for c in models.Order.STATUS_CHOICES]
+    )
 
     def save(self, **kwargs):
         try:
-            order = models.Order.objects.get(id=self.validated_data['order_id'])
+            order = models.Order.objects.get(id=self.validated_data["order_id"])
         except models.Order.DoesNotExist:
-            raise serializers.ValidationError({'message': 'Order not Found'})
+            raise serializers.ValidationError({"message": "Order not Found"})
 
-        if self.validated_data['status'] not in ["pending", "paid", "shipped", "delivered", "canceled"]:
-            raise serializers.ValidationError({'message': 'Status xato'})
+        if self.validated_data["status"] not in [
+            "pending",
+            "paid",
+            "shipped",
+            "delivered",
+            "canceled",
+        ]:
+            raise serializers.ValidationError({"message": "Status xato"})
 
-        order.status = self.validated_data['status']
+        order.status = self.validated_data["status"]
         order.save()
         return order

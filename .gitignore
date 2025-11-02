@@ -183,4 +183,26 @@ cython_debug/
 .idea/
 .env/
 
-*.env/
+*.env/### main template
+pycache/
+*.pyo
+*.pyd
+*.sqlite3
+
+
+
+.venv/
+
+*.iml
+*.iws
+*.ipr
+
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+!**/migrations/__init__.py
+**/migrations/*
+
+nginx.conf
