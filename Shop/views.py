@@ -1,54 +1,65 @@
-from django.contrib.auth import logout
+from django.contrib.auth import get_user_model, logout
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, status, views, viewsets
+from rest_framework import permissions, status
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
-from Shop import models
 from Shop import permissions as custom_perms
-from Shop import serializers
+from Shop.models import Card, Category, Order, Product
+from Shop.serializers import (
+    CardSerializer,
+    CategorySerializer,
+    ChangeOrderStatusSerializer,
+    OrderSerializer,
+    ProductSerializer,
+    RemoveCardSerializer,
+    ResetPasswordConfirmSerializer,
+    ResetPasswordSerializer,
+    ToCardSerializer,
+    ToOrderSerializer,
+    UserSerializer
+)
+
+User = get_user_model()
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = models.Category.objects.all()
-    serializer_class = serializers.CategorySerializer
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
-class SubCategoryViewSet(viewsets.ModelViewSet):
-    queryset = models.SubCategory.objects.all()
-    serializer_class = serializers.SubCategorySerializer
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
 
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = models.Product.objects.all()
-    serializer_class = serializers.ProductSerializer
-
-
-class Register(views.APIView):
+class Register(APIView):
     @swagger_auto_schema(
-        request_body=serializers.UserSerializer,
-        responses={200: serializers.UserSerializer()},
+        request_body=UserSerializer,
+        responses={200: UserSerializer()},
     )
     def post(self, request):
-        serializer = serializers.UserSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class UserList(views.APIView):
-    @swagger_auto_schema(
-        responses={200: serializers.UserSerializer(many=True)}
-    )
+class UserList(APIView):
+    permission_classes = (custom_perms.IsStaff,)
+
+    @swagger_auto_schema(responses={200: UserSerializer(many=True)})
     def get(self, request):
-        users = models.User.objects.all()
-        serializer = serializers.UserSerializer(
+        users = User.objects.all()
+        serializer = UserSerializer(
             instance=users, many=True, context={"request": request}
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class Logout(views.APIView):
+class Logout(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -56,48 +67,48 @@ class Logout(views.APIView):
         return Response({"message": "User logged out!"})
 
 
-class ResetPassword(views.APIView):
+class ResetPassword(APIView):
 
-    @swagger_auto_schema(
-        request_body=serializers.ResetPasswordSerializer
-    )
+    @swagger_auto_schema(request_body=ResetPasswordSerializer)
     def post(self, request):
-        serializer = serializers.ResetPasswordSerializer(data=request.data)
+        serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Reset Password send!"})
 
 
-class ResetPasswordConfirm(views.APIView):
+class ResetPasswordConfirm(APIView):
 
-    @swagger_auto_schema(request_body=serializers.ResetPasswordConfirmSerializer)
+    @swagger_auto_schema(request_body=ResetPasswordConfirmSerializer)
     def post(self, request):
-        serializer = serializers.ResetPasswordConfirmSerializer(data=request.data)
+        serializer = ResetPasswordConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Password successfully reset!"})
 
 
 class CardListView(ListAPIView):
-    queryset = models.Card.objects.all().prefetch_related("card_products__product")
-    serializer_class = serializers.CardSerializer
+    permission_classes = (custom_perms.IsStaff,)
+
+    queryset = Card.objects.all().prefetch_related("card_products__product")
+    serializer_class = CardSerializer
 
 
 class CardRetriveView(RetrieveAPIView):
-    queryset = models.Card.objects.all().prefetch_related("card_products__product")
-    serializer_class = serializers.CardSerializer
+    permission_classes = (custom_perms.IsStaffOrOwner,)
+
+    queryset = Card.objects.all().prefetch_related("card_products__product")
+    serializer_class = CardSerializer
 
 
-class ToCardView(views.APIView):
+class ToCardView(APIView):
     permission_classes = [custom_perms.IsClient]
 
     @swagger_auto_schema(
-        request_body=serializers.ToCardSerializer, responses={200: "Savatga qo'shildi"}
+        request_body=ToCardSerializer, responses={200: "Savatga qo'shildi"}
     )
     def post(self, request):
-        serializer = serializers.ToCardSerializer(
-            data=request.data, context={"user": request.user}
-        )
+        serializer = ToCardSerializer(data=request.data, context={"user": request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
@@ -105,15 +116,15 @@ class ToCardView(views.APIView):
         )
 
 
-class RemoveCardView(views.APIView):
+class RemoveCardView(APIView):
     permission_classes = [custom_perms.IsClient]
 
     @swagger_auto_schema(
-        request_body=serializers.RemoveCardSerializer,
+        request_body=RemoveCardSerializer,
         responses={200: "savatdan olindi"},
     )
     def post(self, request):
-        serializer = serializers.RemoveCardSerializer(
+        serializer = RemoveCardSerializer(
             data=request.data, context={"user": request.user}
         )
         serializer.is_valid(raise_exception=True)
@@ -124,14 +135,14 @@ class RemoveCardView(views.APIView):
         )
 
 
-class ToOrderView(views.APIView):
+class ToOrderView(APIView):
     permission_classes = [custom_perms.IsClient]
 
     @swagger_auto_schema(
-        request_body=serializers.ToOrderSerializer, responses={200: "buyurtma berildi"}
+        request_body=ToOrderSerializer, responses={200: "buyurtma berildi"}
     )
     def post(self, request):
-        serializer = serializers.ToOrderSerializer(
+        serializer = ToOrderSerializer(
             data=request.data, context={"user": request.user}
         )
         serializer.is_valid(raise_exception=True)
@@ -140,15 +151,15 @@ class ToOrderView(views.APIView):
         return Response({"message": "Buyurtma berildi"}, status=status.HTTP_200_OK)
 
 
-class ChangeOrderStatus(views.APIView):
+class ChangeOrderStatus(APIView):
     permission_classes = [custom_perms.IsStaff]
 
     @swagger_auto_schema(
-        request_body=serializers.ChangeOrderStatusSerializer,
+        request_body=ChangeOrderStatusSerializer,
         responses={200: "Status succefuly changed"},
     )
     def post(self, request):
-        serializer = serializers.ChangeOrderStatusSerializer(data=request.data)
+        serializer = ChangeOrderStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
@@ -157,12 +168,12 @@ class ChangeOrderStatus(views.APIView):
 
 
 class OrderListView(ListAPIView):
-    queryset = models.Order.objects.all().prefetch_related("products__product")
-    serializer_class = serializers.OrderSerializer
+    queryset = Order.objects.all().prefetch_related("products__product")
+    serializer_class = OrderSerializer
     permission_classes = [custom_perms.IsStaff]
 
 
 class OrderRetrieveView(RetrieveAPIView):
-    queryset = models.Order.objects.all().prefetch_related("products__product")
-    serializer_class = serializers.OrderSerializer
+    queryset = Order.objects.all().prefetch_related("products__product")
+    serializer_class = OrderSerializer
     permission_classes = [custom_perms.IsStaffOrOwner]

@@ -1,16 +1,24 @@
 import uuid
+from decimal import Decimal
 
-from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.core import validators
 from django.db import models, transaction
-from django.db.models import UUIDField
+from django.db.models import EmailField, UUIDField
 
-User = get_user_model()
+
+class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = EmailField(unique=True)
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
-    phone = models.CharField(max_length=15, unique=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
+    )
+    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
     img = models.ImageField(upload_to="profile", blank=True, null=True)
     reset_code = models.CharField(max_length=10, blank=True, null=True)
 
@@ -25,20 +33,10 @@ class Category(models.Model):
         return self.name
 
 
-class SubCategory(models.Model):
-    category = models.ForeignKey(
-        Category, on_delete=models.CASCADE, related_name="sub_categories"
-    )
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
 class Product(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    subcategory = models.ForeignKey(
-        SubCategory, on_delete=models.SET_NULL, null=True, related_name="products"
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True, related_name="products"
     )
     name = models.CharField(max_length=100)
     description = models.TextField(
@@ -49,6 +47,13 @@ class Product(models.Model):
     )
     price = models.DecimalField(max_digits=12, decimal_places=2)
     stock = models.PositiveIntegerField(default=1)
+    discount_percent = models.IntegerField(
+        default=0,
+        validators=[validators.MinValueValidator(0), validators.MaxValueValidator(100)]
+    )
+
+    def get_total_price(self):
+        return self.price * (Decimal(1) - Decimal(self.discount_percent) / Decimal(100))
 
     def __str__(self):
         return self.name
@@ -57,7 +62,7 @@ class Product(models.Model):
 class Card(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="card",
     )
@@ -120,10 +125,13 @@ class CardProduct(models.Model):
 
     @property
     def total_price(self):
-        return self.product.price * self.quantity
+        return self.product.get_total_price() * self.quantity
 
     def __str__(self):
         return f"{self.product.name} - {self.quantity}"
+
+
+# TODO transactions
 
 
 class Order(models.Model):
@@ -137,7 +145,10 @@ class Order(models.Model):
 
     id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="orders"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="orders",
     )
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
@@ -164,7 +175,13 @@ class OrderedProduct(models.Model):
 
     @property
     def total_price(self):
-        return self.quantity * self.product.price
+        return self.quantity * self.product.get_total_price()
 
     def __str__(self):
         return f"{self.product} - {self.quantity}"
+
+
+class FlashSales(models.Model):
+    start_at = models.DateTimeField()
+    end_at = models.DateTimeField()
+
