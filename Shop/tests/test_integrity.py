@@ -1,10 +1,11 @@
-import pytest
 from decimal import Decimal
+
+import pytest
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient
-from django.contrib.auth import get_user_model
 
-from Shop.models import Category, Product, Card, Order
+from Shop.models import Card, Category, Order, Product
 
 User = get_user_model()
 
@@ -21,7 +22,7 @@ def test_full_flow():
         "email": "testuser@example.com",
         "password": "strongpass123",
         "password_confirm": "strongpass123",
-        "profile": {"phone": "998901234567"},
+        "phone": "998901234567",
     }
     url_register = reverse("register")
     response = client.post(url_register, data=user_data, format="json")
@@ -29,7 +30,7 @@ def test_full_flow():
     user_id = response.data["id"]
 
     user = User.objects.get(id=user_id)
-    assert user.profile.phone == "998901234567"
+    assert user.phone == "998901234567"
 
     # ---------------------------
     # 2. Создаём категорию и продукты
@@ -41,7 +42,7 @@ def test_full_flow():
         description="A very nice laptop",
         price=Decimal("1000.00"),
         stock=10,
-        discount_percent=10
+        discount_percent=10,
     )
     product2 = Product.objects.create(
         name="Mouse",
@@ -49,7 +50,7 @@ def test_full_flow():
         description="Wireless mouse",
         price=Decimal("50.00"),
         stock=20,
-        discount_percent=0
+        discount_percent=0,
     )
 
     # ---------------------------
@@ -57,10 +58,14 @@ def test_full_flow():
     # ---------------------------
     client.force_authenticate(user=user)
     url_to_card = reverse("to-card")
-    response = client.post(url_to_card, data={"product_id": str(product1.id), "quantity": 2}, format="json")
+    response = client.post(
+        url_to_card, data={"product_id": str(product1.id), "quantity": 2}, format="json"
+    )
     assert response.status_code == 200
 
-    response = client.post(url_to_card, data={"product_id": str(product2.id), "quantity": 1}, format="json")
+    response = client.post(
+        url_to_card, data={"product_id": str(product2.id), "quantity": 1}, format="json"
+    )
     assert response.status_code == 200
 
     card = Card.objects.get(user=user)
@@ -91,11 +96,15 @@ def test_full_flow():
     assert reset_code is not None
 
     url_reset_confirm = reverse("reset-password-confirm")
-    response = client.post(url_reset_confirm, data={
-        "email": user.email,
-        "reset_code": reset_code,
-        "new_password": "newstrongpass123"
-    }, format="json")
+    response = client.post(
+        url_reset_confirm,
+        data={
+            "email": user.email,
+            "reset_code": reset_code,
+            "new_password": "newstrongpass123",
+        },
+        format="json",
+    )
     assert response.status_code == 200
 
     user.refresh_from_db()
@@ -106,10 +115,11 @@ def test_full_flow():
     # 6. Проверяем ChangeOrderStatus
     # ---------------------------
     url_change_status = reverse("change-order-status")
-    response = client.post(url_change_status, data={
-        "order_id": str(order.id),
-        "status": "paid"
-    }, format="json")
+    response = client.post(
+        url_change_status,
+        data={"order_id": str(order.id), "status": "paid"},
+        format="json",
+    )
     assert response.status_code == 403
 
     staff_user = User.objects.create_user(
@@ -118,10 +128,11 @@ def test_full_flow():
 
     client.force_authenticate(user=staff_user)
 
-    response = client.post(url_change_status, data={
-        "order_id": str(order.id),
-        "status": "paid"
-    }, format="json")
+    response = client.post(
+        url_change_status,
+        data={"order_id": str(order.id), "status": "paid"},
+        format="json",
+    )
 
     order.refresh_from_db()
     assert response.status_code == 200

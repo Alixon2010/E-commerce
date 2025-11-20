@@ -1,8 +1,9 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from Shop import views
-from Shop.views import OrderListView, OrderRetrieveView
+from Shop.views import OrderListView, OrderRetrieveView, GoogleAuthView
 
 router = DefaultRouter()
 router.register("categories", views.CategoryViewSet, basename="category")
@@ -30,6 +31,15 @@ urlpatterns = [
     path("orders/<uuid:pk>/", OrderRetrieveView.as_view(), name="order-detail"),
     path("card/", views.CardListView.as_view(), name="card-list"),
     path("card/<uuid:pk>/", views.CardRetriveView.as_view(), name="card-detail"),
+    path(
+        "reset_password_by_old_password/",
+        views.ResetPasswordByOldPassword.as_view(),
+        name="reset-password-by-old-password",
+    ),
+    path("token/", views.CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("contact-us/", views.ContactUsView.as_view(), name="contact_us"),
+    path("auth/google/", GoogleAuthView.as_view()),
 ]
 
 urlpatterns += router.urls

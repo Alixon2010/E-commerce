@@ -1,6 +1,8 @@
 from decimal import Decimal
-from django.test import TestCase
+
 from django.contrib.auth import get_user_model
+from django.test import TestCase
+
 from Shop import models
 
 User = get_user_model()
@@ -9,8 +11,13 @@ User = get_user_model()
 class TestModels(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="pass1234")
-        self.profile = models.Profile.objects.create(user=self.user, phone="998901234567")
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="pass1234",
+            phone="998901234567",
+        )
+        self.profile = models.Profile.objects.create(user=self.user)
 
         self.category = models.Category.objects.create(name="Electronics")
 
@@ -20,7 +27,7 @@ class TestModels(TestCase):
             description="Very good phone",
             price=Decimal("100.00"),
             stock=10,
-            discount_percent=10
+            discount_percent=10,
         )
 
         self.card = models.Card.objects.create(user=self.user)
@@ -32,7 +39,9 @@ class TestModels(TestCase):
         self.assertEqual(str(self.category), "Electronics")
 
     def test_product_discount_logic(self):
-        correct_price = self.product.price * (Decimal(1) - (Decimal(self.product.discount_percent) / Decimal(100)))
+        correct_price = self.product.price * (
+            Decimal(1) - (Decimal(self.product.discount_percent) / Decimal(100))
+        )
         self.assertEqual(self.product.get_total_price(), correct_price)
 
     def test_card_add_and_remove(self):
@@ -48,10 +57,10 @@ class TestModels(TestCase):
 
     def test_order_creation(self):
         order = models.Order.objects.create(
-            user=self.user,
-            latitude=41.3,
-            longitude=69.2
+            user=self.user, latitude=41.3, longitude=69.2
         )
-        models.OrderedProduct.objects.create(order=order, product=self.product, quantity=2)
+        models.OrderedProduct.objects.create(
+            order=order, product=self.product, quantity=2
+        )
         total = sum(item.total_price for item in order.products.all())
         self.assertEqual(order.total_price, total)

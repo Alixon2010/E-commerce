@@ -1,6 +1,7 @@
 import random
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.core.mail import send_mail
 from django.db import transaction
 from rest_framework import validators
@@ -16,6 +17,7 @@ from rest_framework.serializers import (
     UUIDField,
     ValidationError,
 )
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from root import settings
 from Shop.models import (
@@ -417,3 +419,68 @@ class ChangeOrderStatusSerializer(Serializer):
         order.status = self.validated_data["status"]
         order.save()
         return order
+
+
+class ResetPasswordByOldPasswordSerializer(Serializer):
+    old_password = CharField(write_only=True)
+    new_password = CharField(write_only=True)
+    new_password_confirm = CharField(write_only=True)
+
+    def validate(self, attrs):
+        user = self.context.get("request").user
+
+        # Проверка совпадения нового пароля
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise ValidationError({"new_password_confirm": "Пароли не совпадают"})
+
+        # Встроенная валидация Django
+        try:
+            validate_password(attrs["new_password"], user=user)
+        except ValidationError as e:
+            raise ValidationError({"new_password": list(e.messages)})
+
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        user.set_password(self.validated_data["new_password"])
+        user.save()
+        return user
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = "identifier"
+
+    identifier = CharField(write_only=True)
+    password = CharField(write_only=True)
+
+    def validate(self, attrs):
+        identifier = attrs.get("identifier")
+        password = attrs.get("password")
+
+        user = User.objects.filter(email=identifier).first()
+
+        if not user:
+            user = User.objects.filter(phone=identifier).first()
+
+        if not user or not user.check_password(password):
+            raise ValidationError("Email/phone yoki password xato")
+
+        data = super().get_token(user)
+        return {
+            "refresh": str(data),
+            "access": str(data.access_token),
+        }
+
+from rest_framework import serializers
+from .models import ContactMessage
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = ['id', 'name', 'email', 'phone', 'message']
+
+    def validate(self, attrs):
+        if not attrs.get('email') and not attrs.get('phone'):
+            raise serializers.ValidationError("Укажите email или телефон")
+        return attrs

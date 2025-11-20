@@ -30,9 +30,12 @@ class Command(BaseCommand):
             email = fake.email()
             password = "password123"
             user = User.objects.create_user(
-                username=username, email=email, password=password
+                username=username,
+                email=email,
+                password=password,
+                phone=fake.phone_number()[:15],
             )
-            Profile.objects.create(user=user, phone=fake.phone_number()[:15], img=None)
+            Profile.objects.create(user=user, img=None)
             users.append(user)
 
         # --- Categories ---

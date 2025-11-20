@@ -5,36 +5,43 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core import validators
 from django.db import models, transaction
-from django.db.models import EmailField, UUIDField
+from django.db.models import EmailField, ForeignKey, UUIDField, Model
 
 
-class User(AbstractUser):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class UUIDModel(Model):
+    id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    class Meta:
+        abstract = True
+
+
+class User(AbstractUser, UUIDModel):
     email = EmailField(unique=True)
+    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username", "phone"]
 
 
-class Profile(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField(
+class Profile(UUIDModel):
+    user: "User" = models.OneToOneField(
         settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
     )
-    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
     img = models.ImageField(upload_to="profile", blank=True, null=True)
     reset_code = models.CharField(max_length=10, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username}: {self.phone}"
+        return f"{self.user.username}: {self.user.phone}"
 
 
-class Category(models.Model):
+class Category(UUIDModel):
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
 
-class Product(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Product(UUIDModel):
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, related_name="products"
     )
@@ -45,11 +52,20 @@ class Product(models.Model):
             validators.MaxLengthValidator(4000),
         ]
     )
+    image = models.ImageField(upload_to="products", blank=True, null=True)
     price = models.DecimalField(max_digits=12, decimal_places=2)
     stock = models.PositiveIntegerField(default=1)
     discount_percent = models.IntegerField(
         default=0,
-        validators=[validators.MinValueValidator(0), validators.MaxValueValidator(100)]
+        validators=[validators.MinValueValidator(0), validators.MaxValueValidator(100)],
+    )
+
+    flash = ForeignKey(
+        "FlashSales",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="products",
     )
 
     def get_total_price(self):
@@ -59,9 +75,8 @@ class Product(models.Model):
         return self.name
 
 
-class Card(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField(
+class Card(UUIDModel):
+    user: "User" = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="card",
@@ -116,7 +131,7 @@ class Card(models.Model):
         return f"{self.user.username}'s Card"
 
 
-class CardProduct(models.Model):
+class CardProduct(UUIDModel):
     card = models.ForeignKey(
         Card, on_delete=models.CASCADE, related_name="card_products"
     )
@@ -134,7 +149,7 @@ class CardProduct(models.Model):
 # TODO transactions
 
 
-class Order(models.Model):
+class Order(UUIDModel):
     STATUS_CHOICES = [
         ("pending", "Kutilmoqda"),
         ("paid", "To'langan"),
@@ -143,8 +158,7 @@ class Order(models.Model):
         ("canceled", "Bekor qilingan"),
     ]
 
-    id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(
+    user: "User" = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
@@ -167,8 +181,7 @@ class Order(models.Model):
         return f"{self.user.username} - {self.status}"
 
 
-class OrderedProduct(models.Model):
-    id = UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class OrderedProduct(UUIDModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="products")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
@@ -181,7 +194,24 @@ class OrderedProduct(models.Model):
         return f"{self.product} - {self.quantity}"
 
 
-class FlashSales(models.Model):
+class FlashSales(UUIDModel):
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
 
+    def clear_discount_percent(self, session):
+        with session as _:
+            for product in self.products.all():
+                product.discount_percent = 0
+
+        return True
+
+
+class ContactMessage(UUIDModel):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.email or self.phone})"
