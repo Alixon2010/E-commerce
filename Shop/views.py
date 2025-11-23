@@ -1,5 +1,3 @@
-from os import getenv
-
 import requests
 from django.contrib.auth import get_user_model, logout
 from django.db import transaction
@@ -20,6 +18,7 @@ from Shop.serializers import (
     CardSerializer,
     CategorySerializer,
     ChangeOrderStatusSerializer,
+    ContactMessageSerializer,
     CustomTokenObtainPairSerializer,
     OrderSerializer,
     ProductSerializer,
@@ -29,7 +28,7 @@ from Shop.serializers import (
     ResetPasswordSerializer,
     ToCardSerializer,
     ToOrderSerializer,
-    UserSerializer, ContactMessageSerializer,
+    UserSerializer,
 )
 from Shop.tasks import send_contact_email
 
@@ -221,26 +220,24 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-from django.core.mail import send_mail
-
-
 class ContactUsView(APIView):
 
-    @swagger_auto_schema(request_body=ContactMessageSerializer,
-                         responses={201: "Message sent successfully"})
+    @swagger_auto_schema(
+        request_body=ContactMessageSerializer,
+        responses={201: "Message sent successfully"},
+    )
     def post(self, request):
         serializer = ContactMessageSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         contact = serializer.save()
 
         send_contact_email.delay(
-            contact.name,
-            contact.email,
-            contact.phone,
-            contact.message
+            contact.name, contact.email, contact.phone, contact.message
         )
 
-        return Response({"message": "Message sent successfully"}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Message sent successfully"}, status=status.HTTP_201_CREATED
+        )
 
 
 class GoogleAuthView(APIView):
@@ -252,8 +249,7 @@ class GoogleAuthView(APIView):
             return Response({"error": "Token not provided"}, status=400)
 
         response = requests.get(
-            GOOGLE_USERINFO_URL,
-            headers={"Authorization": f"Bearer {access_token}"}
+            GOOGLE_USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"}
         )
 
         if response.status_code != 200:
@@ -275,7 +271,7 @@ class GoogleAuthView(APIView):
                     "username": email.split("@")[0],
                     "first_name": first_name,
                     "last_name": last_name,
-                }
+                },
             )
 
             if created:

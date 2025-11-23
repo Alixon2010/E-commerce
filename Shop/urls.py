@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from Shop import views
-from Shop.views import OrderListView, OrderRetrieveView, GoogleAuthView
+from Shop.views import GoogleAuthView, OrderListView, OrderRetrieveView
 
 router = DefaultRouter()
 router.register("categories", views.CategoryViewSet, basename="category")

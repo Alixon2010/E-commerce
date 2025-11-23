@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core import validators
 from django.db import models, transaction
-from django.db.models import EmailField, ForeignKey, UUIDField, Model
+from django.db.models import EmailField, ForeignKey, Model, UUIDField
 
 
 class UUIDModel(Model):

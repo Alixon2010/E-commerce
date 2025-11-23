@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.mail import send_mail
 from django.db import transaction
-from rest_framework import validators
+from rest_framework import serializers, validators
 from rest_framework.serializers import (
     CharField,
     ChoiceField,
@@ -28,6 +28,8 @@ from Shop.models import (
     Product,
     Profile,
 )
+
+from .models import ContactMessage
 
 User = get_user_model()
 
@@ -472,15 +474,13 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "access": str(data.access_token),
         }
 
-from rest_framework import serializers
-from .models import ContactMessage
 
 class ContactMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactMessage
-        fields = ['id', 'name', 'email', 'phone', 'message']
+        fields = ["id", "name", "email", "phone", "message"]
 
     def validate(self, attrs):
-        if not attrs.get('email') and not attrs.get('phone'):
-            raise serializers.ValidationError("Укажите email или телефон")
+        if not attrs.get("email") and not attrs.get("phone"):
+            raise serializers.ValidationError("Email yoki phone kiriting")
         return attrs
