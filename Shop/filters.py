@@ -1,11 +1,14 @@
 import django_filters
-
-from Shop.models import Product
+from Shop.models import Product, Stars
 
 
 class ProductFilter(django_filters.FilterSet):
+    price_min = django_filters.NumberFilter(field_name="price", lookup_expr="gte")
+    price_max = django_filters.NumberFilter(field_name="price", lookup_expr="lte")
+
     class Meta:
         model = Product
         fields = {
-            "category": ["exact"],  # фильтр по точному совпадению
+            "category": ["exact"],
+            "price": ["gte", "lte"],
         }

@@ -23,12 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
 
+# TODO
 raw_hosts = os.getenv("ALLOWED_HOSTS", "")
 
-if raw_hosts:
-    ALLOWED_HOSTS = [host.strip() for host in raw_hosts.split(",")]
-else:
-    ALLOWED_HOSTS = []
+# if raw_hosts:
+#     ALLOWED_HOSTS = [host.strip() for host in raw_hosts.split(",")]
+# else:
+#     ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ["*"]
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=3),
@@ -36,6 +39,9 @@ SIMPLE_JWT = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -121,18 +127,20 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
     "SECURITY_DEFINITIONS": {
         "Bearer": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-            "description": "Введите токен в формате: Bearer <your_token>",
+            "description": "Tokenni shu formatda yozing: Bearer <your_token>",
         }
     },
 }
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+]
 
 LANGUAGE_CODE = "en-us"
 
@@ -163,11 +171,28 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 AUTH_USER_MODEL = "Shop.User"
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"  # брокер сообщений
+CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "UTC"
+CELERY_TIMEZONE = "Asia/Tashkent"
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+
+# TODO
+INSTALLED_APPS += ["corsheaders"]
+
+MIDDLEWARE = ["corsheaders.middleware.CorsMiddleware"] + MIDDLEWARE
+
+CORS_ALLOW_ALL_ORIGINS = True  # временно для теста
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-requested-with",
+    "accept",
+    "origin",
+    "user-agent",
+    "accept-encoding",
+    "connection",
+]

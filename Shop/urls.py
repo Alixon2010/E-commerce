@@ -8,6 +8,8 @@ from Shop.views import GoogleAuthView, OrderListView, OrderRetrieveView
 router = DefaultRouter()
 router.register("categories", views.CategoryViewSet, basename="category")
 router.register("products", views.ProductViewSet, basename="product")
+router.register("flash_sales", views.FlashSaleViewSet, basename="flash-sale")
+router.register("stars", views.StarsViewSet, basename="star")
 
 urlpatterns = [
     path("register/", views.Register.as_view(), name="register"),
@@ -40,6 +42,10 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("contact-us/", views.ContactUsView.as_view(), name="contact_us"),
     path("auth/google/", GoogleAuthView.as_view()),
+    path("payments/webhook/", views.StripeWebhookView.as_view(), name="stripe-webhook"),
+    path("add_product_to_flash_sale/", views.FlashSaleAddProductsView.as_view(), name="add-product-to-flash-sale"),
+    path("romve_product_from_flash_sale/", views.FlashSaleRemoveProductsView.as_view(), name="remove-product-to-flash-sale"),
 ]
+
 
 urlpatterns += router.urls

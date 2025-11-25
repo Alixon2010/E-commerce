@@ -16,11 +16,12 @@ class UUIDModel(Model):
 
 
 class User(AbstractUser, UUIDModel):
+    username = models.CharField(unique=True, max_length=150, null=True, blank=True)
     email = EmailField(unique=True)
     phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "phone"]
+    REQUIRED_FIELDS = ["phone"]
 
 
 class Profile(UUIDModel):
@@ -28,7 +29,8 @@ class Profile(UUIDModel):
         settings.AUTH_USER_MODEL, related_name="profile", on_delete=models.CASCADE
     )
     img = models.ImageField(upload_to="profile", blank=True, null=True)
-    reset_code = models.CharField(max_length=10, blank=True, null=True)
+    reset_code = models.CharField(max_length=256, blank=True, null=True)
+    reset_code_created_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username}: {self.user.phone}"
@@ -146,13 +148,24 @@ class CardProduct(UUIDModel):
         return f"{self.product.name} - {self.quantity}"
 
 
-# TODO transactions
+class Transaction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.ForeignKey(
+        "Shop.Order", on_delete=models.CASCADE, null=True, blank=True
+    )
+    stripe_payment_intent = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default="usd")
+    status = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.amount} {self.currency} - {self.status}"
 
 
 class Order(UUIDModel):
     STATUS_CHOICES = [
         ("pending", "Kutilmoqda"),
-        ("paid", "To'langan"),
         ("shipped", "Yuborilgan"),
         ("delivered", "Yetkazilgan"),
         ("canceled", "Bekor qilingan"),
@@ -169,6 +182,8 @@ class Order(UUIDModel):
 
     latitude = models.FloatField()
     longitude = models.FloatField()
+    paid = models.BooleanField(default=False)
+    stripe_payment_intent = models.CharField(max_length=255, blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -202,6 +217,7 @@ class FlashSales(UUIDModel):
         with session as _:
             for product in self.products.all():
                 product.discount_percent = 0
+                product.save()
 
         return True
 
@@ -215,3 +231,22 @@ class ContactMessage(UUIDModel):
 
     def __str__(self):
         return f"{self.name} ({self.email or self.phone})"
+
+class Stars(UUIDModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="starts",
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="starts")
+    created_at = models.DateTimeField(auto_now_add=True)
+    grade = models.SmallIntegerField(validators=[
+        validators.MinValueValidator(1),
+        validators.MaxValueValidator(5)
+    ])
+
+    class Meta:
+        unique_together = ("user", "product")
+
+    def __str__(self):
+        return f"{self.user.username} appreciated {self.product.name}"

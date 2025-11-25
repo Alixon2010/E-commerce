@@ -1,5 +1,8 @@
+import math
 import random
+from datetime import timedelta
 
+import stripe
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.mail import send_mail
@@ -18,6 +21,7 @@ from rest_framework.serializers import (
     ValidationError,
 )
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth.hashers import make_password, check_password
 
 from root import settings
 from Shop.models import (
@@ -27,9 +31,12 @@ from Shop.models import (
     OrderedProduct,
     Product,
     Profile,
+    Transaction,
+    FlashSales, Stars,
 )
 
 from .models import ContactMessage
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -42,6 +49,11 @@ class CategorySerializer(ModelSerializer):
 
 
 class ProductSerializer(ModelSerializer):
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        required=True,
+    )
+
     class Meta:
         model = Product
         fields = "__all__"
@@ -64,12 +76,52 @@ class ProfileSerializer(ModelSerializer):
         read_only_fields = ("id",)
 
 
-class UserSerializer(ModelSerializer):
-    profile = ProfileSerializer(required=False)
-    password = CharField(max_length=128, write_only=True)
+class RegisterSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = CharField(write_only=True)
     password_confirm = CharField(
         write_only=True, error_messages={"required": "Bu maydon kiritilishi zarur"}
     )
+
+    def validate(self, attrs):
+        password = attrs.get("password")
+        password_confirm = attrs.get("password_confirm")
+
+        if not password:
+            raise ValidationError({"message": "Passwordni kiriting"})
+
+        if not password_confirm:
+            raise ValidationError({"message": "Password konfirmni kiriting"})
+
+        if password != password_confirm:
+            raise ValidationError(
+                {"message": "Password confirm va Password mos kelmadi"}
+            )
+
+        return attrs
+
+    def validate_email(self, value):
+        email = User.objects.filter(email=value).exists()
+        if email:
+            raise ValidationError({"message": "Email allaqachon mavjud!"})
+        return value
+
+    def save(self, **kwargs):
+        password = self.validated_data.pop("password")
+        self.validated_data.pop("password_confirm", None)
+
+        with transaction.atomic():
+            user = User.objects.create(**self.validated_data)
+            user.set_password(password)
+            user.is_active = True
+            user.save()
+            Profile.objects.create(user=user)
+
+            return user
+
+
+class UserSerializer(ModelSerializer):
+    profile = ProfileSerializer(required=False)
 
     class Meta:
         model = User
@@ -90,64 +142,6 @@ class UserSerializer(ModelSerializer):
                 "validators": [validators.UniqueValidator(queryset=User.objects.all())]
             },
         }
-
-    def validate(self, attrs):
-        password = attrs.get("password")
-        password_confirm = attrs.get("password_confirm")
-
-        if not password:
-            raise ValidationError({"message": "Passwordni kiriting"})
-
-        if not password_confirm:
-            raise ValidationError({"message": "Password konfirmni kiriting"})
-
-        if password != password_confirm:
-            raise ValidationError(
-                {"message": "Password confirm va Password mos kelmadi"}
-            )
-
-        return attrs
-
-    def create(self, validated_data):
-        try:
-            profile = validated_data.pop("profile")
-        except KeyError:
-            profile = None
-
-        password = validated_data.pop("password")
-        validated_data.pop("password_confirm")
-
-        with transaction.atomic():
-            user = User.objects.create(**validated_data)
-            user.set_password(password)
-            user.is_active = True
-            user.save()
-
-            if profile:
-                Profile.objects.create(user=user, **profile)
-            else:
-                Profile.objects.create(user=user)
-
-        return user
-
-    def update(self, instance, validated_data):
-        profile = validated_data.get("profile")
-        if profile is not None:
-            profile = validated_data.pop("profile")
-            instance_profile = instance.profile
-            for field, value in profile.items():
-                setattr(instance_profile, field, value)
-            instance_profile.save()
-
-        for field, value in validated_data.items():
-            if "password" == field:
-                instance.set_password(value)
-            else:
-                setattr(instance, field, value)
-
-        instance.save()
-
-        return instance
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -185,8 +179,8 @@ class ResetPasswordSerializer(Serializer):
 
         profile, _ = Profile.objects.get_or_create(user=user)
 
-        reset_code = random.randint(100000, 999999)
-        profile.reset_code = reset_code
+        reset_code = random.randint(100000, 999999)  # TODO
+        profile.reset_code = make_password(str(reset_code))
         profile.save()
 
         send_mail(
@@ -212,8 +206,14 @@ class ResetPasswordConfirmSerializer(Serializer):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise ValidationError({"message": "Email invalid!"})
+        profile = user.profile
 
-        if user.profile.reset_code != reset_code:
+        if profile.reset_code_created_at:
+            expire_time = profile.reset_code_created_at + timedelta(minutes=3)
+            if timezone.now() > expire_time:
+                raise ValidationError({"message": "Reset code expired"})
+
+        if profile.reset_code and not check_password(reset_code, profile.reset_code):
             raise ValidationError({"message": "Reset code invalid"})
 
         attrs["user"] = user
@@ -238,7 +238,7 @@ class CardSerializer(Serializer):
     def to_representation(self, instance):
         user = instance.user
         return {
-            "user": user.username,
+            "user": user.email,
             "products": [
                 {
                     "id": product.product.id,
@@ -277,7 +277,7 @@ class ToCardSerializer(Serializer):
 
         if not added:
             raise ValidationError(
-                {"message": "Muammo yuz berdi iltimos keyinroq urinib ko`ring"}
+                {"message": "Muammo yuz berdi iltimos keyinroq urinib koring"}
             )
 
         return card
@@ -288,10 +288,7 @@ class RemoveCardSerializer(Serializer):
     quantity = IntegerField(required=False, min_value=1)
 
     def save(self, **kwargs):
-        try:
-            user = self.context["user"]
-        except KeyError:
-            raise ValidationError({"message": "User not Found"})
+        user = self.context["user"]
 
         try:
             card = Card.objects.get(user=user)
@@ -328,9 +325,9 @@ class ToOrderSerializer(Serializer):
         return value
 
     def save(self, **kwargs):
-        user = self.context.get("user")
-        if not user or not user.is_authenticated:
-            raise ValidationError({"message": "User not authenticated"})
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        user = self.context["user"]
 
         try:
             card = Card.objects.prefetch_related("card_products__product").get(
@@ -356,9 +353,28 @@ class ToOrderSerializer(Serializer):
             ]
             OrderedProduct.objects.bulk_create(order_products)
 
-            card.card_products.all().delete()
+            if order_products:
+                intent = stripe.PaymentIntent.create(
+                    amount=math.ceil(order.total_price * 100),
+                    currency="usd",
+                    payment_method_types=["card"],
+                    capture_method="automatic",
+                    metadata={"order_id": order.id},
+                )
 
-        return order
+                Transaction.objects.create(
+                    user=user,
+                    order=order,
+                    stripe_payment_intent=intent.id,
+                    amount=order.total_price,
+                    currency="usd",
+                    status=intent.status,
+                )
+
+                order.stripe_payment_intent = intent.id
+                order.save()
+
+                return intent.client_secret
 
 
 class OrderSerializer(ModelSerializer):
@@ -429,13 +445,11 @@ class ResetPasswordByOldPasswordSerializer(Serializer):
     new_password_confirm = CharField(write_only=True)
 
     def validate(self, attrs):
-        user = self.context.get("request").user
+        user = self.context["request"].user
 
-        # Проверка совпадения нового пароля
         if attrs["new_password"] != attrs["new_password_confirm"]:
-            raise ValidationError({"new_password_confirm": "Пароли не совпадают"})
+            raise ValidationError({"new_password_confirm": "parol mos kelmadi"})
 
-        # Встроенная валидация Django
         try:
             validate_password(attrs["new_password"], user=user)
         except ValidationError as e:
@@ -484,3 +498,37 @@ class ContactMessageSerializer(serializers.ModelSerializer):
         if not attrs.get("email") and not attrs.get("phone"):
             raise serializers.ValidationError("Email yoki phone kiriting")
         return attrs
+
+class ProductInFlashSerializer(ProductSerializer):
+    class Meta:
+        model = Product
+        read_only_fields = ("id",)
+        exclude = ("flash",)
+
+class FlashSalesSerializer(ModelSerializer):
+    products = ProductInFlashSerializer(many=True, required=False)
+
+    class Meta:
+        model = FlashSales
+        fields = "__all__"
+        read_only_fields = ("id", "start_at", "end_at")
+
+    def create(self, validated_data):
+        products_data = validated_data.pop("products", [])
+        flash_sale = FlashSales.objects.create(**validated_data)
+        for product in products_data:
+            flash_sale.products.add(product)
+        return flash_sale
+
+class StarsSerializer(ModelSerializer):
+    class Meta:
+        model = Stars
+        exclude = ("user", )
+        read_only_fields = ("id", "created_at")
+
+
+    def create(self, validated_data):
+        user = self.context["user"]
+
+        validated_data["user"] = user
+        return super().create(validated_data)
