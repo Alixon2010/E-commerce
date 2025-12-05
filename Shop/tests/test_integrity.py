@@ -1,10 +1,12 @@
 # python
 from decimal import Decimal
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.urls import reverse
 from rest_framework.test import APIClient
+
 from Shop.models import Card, Category, Order, Product, Profile
 
 User = get_user_model()
@@ -91,7 +93,9 @@ def test_full_flow():
     # Получаем reset_code из профиля для теста
     profile = Profile.objects.get(user=user)
     # Берём плэйн код (или используем фиктивный), затем хешируем в профиле для проверки
-    reset_code_plain = profile.reset_code_plain if hasattr(profile, "reset_code_plain") else "123456"
+    reset_code_plain = (
+        profile.reset_code_plain if hasattr(profile, "reset_code_plain") else "123456"
+    )
     profile.reset_code = make_password(reset_code_plain)
     profile.save()
 

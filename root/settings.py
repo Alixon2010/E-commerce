@@ -34,13 +34,13 @@ raw_hosts = os.getenv("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = ["*"]
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=3),
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=50),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -68,13 +68,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "Shop.middlewares.UserLanguageMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
 ROOT_URLCONF = "root.urls"
 
 TEMPLATES = [
@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
+    "USE_SESSION_AUTH": False,
     "SECURITY_DEFINITIONS": {
         "Bearer": {
             "type": "apiKey",
@@ -142,11 +142,21 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
 ]
 
-LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Asia/Tashkent"
 
 USE_I18N = True
+
+LANGUAGES = [
+    ("uz", "Oʻzbek"),
+    ("ru", "Русский"),
+    ("en", "English"),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
+
+LANGUAGE_CODE = "en"
 
 USE_TZ = True
 
@@ -179,6 +189,7 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+STRIPE_ENDPOINT_SECRET = os.getenv('STRIPE_ENDPOINT_SECRET')
 
 # TODO
 INSTALLED_APPS += ["corsheaders"]

@@ -106,7 +106,7 @@ class TestLogout:
         url = reverse("logout")
         resp = api_client.post(url)
         assert resp.status_code == 200
-        assert resp.data["message"] == "User logged out!"
+        assert resp.data["message"] == "Foydalanuvchi tizimdan chiqdi!"
 
 
 @pytest.mark.django_db

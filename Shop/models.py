@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core import validators
 from django.db import models, transaction
 from django.db.models import EmailField, ForeignKey, Model, UUIDField
+from django.utils.translation import gettext as _
 
 
 class UUIDModel(Model):
@@ -19,9 +20,18 @@ class User(AbstractUser, UUIDModel):
     username = models.CharField(unique=True, max_length=150, null=True, blank=True)
     email = EmailField(unique=True)
     phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
+    language = models.CharField(
+        max_length=5,
+        choices=[
+            ("en", "English"),
+            ("ru", "Русский"),
+            ("uz", "O'zbek"),
+        ],
+        default="en",
+    )
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["phone"]
+    REQUIRED_FIELDS = ["phone", "username"]
 
 
 class Profile(UUIDModel):
@@ -153,7 +163,7 @@ class Transaction(models.Model):
     order = models.ForeignKey(
         "Shop.Order", on_delete=models.CASCADE, null=True, blank=True
     )
-    stripe_payment_intent = models.CharField(max_length=255)
+    stripe_payment_intent = models.CharField(max_length=255, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default="usd")
     status = models.CharField(max_length=50)
@@ -165,10 +175,10 @@ class Transaction(models.Model):
 
 class Order(UUIDModel):
     STATUS_CHOICES = [
-        ("pending", "Kutilmoqda"),
-        ("shipped", "Yuborilgan"),
-        ("delivered", "Yetkazilgan"),
-        ("canceled", "Bekor qilingan"),
+        ("pending", _("Kutilmoqda")),
+        ("shipped", _("Yuborilgan")),
+        ("delivered", _("Yetkazilgan")),
+        ("canceled", _("Bekor qilingan")),
     ]
 
     user: "User" = models.ForeignKey(
@@ -213,11 +223,10 @@ class FlashSales(UUIDModel):
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
 
-    def clear_discount_percent(self, session):
-        with session as _:
-            for product in self.products.all():
-                product.discount_percent = 0
-                product.save()
+    def clear_discount_percent(self):
+        for product in self.products.all():
+            product.discount_percent = 0
+            product.save()
 
         return True
 
@@ -232,21 +241,23 @@ class ContactMessage(UUIDModel):
     def __str__(self):
         return f"{self.name} ({self.email or self.phone})"
 
+
 class Stars(UUIDModel):
-    user = models.ForeignKey(
+    user: "User" = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="starts",
+        related_name="stars",
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="starts")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="stars")
     created_at = models.DateTimeField(auto_now_add=True)
-    grade = models.SmallIntegerField(validators=[
-        validators.MinValueValidator(1),
-        validators.MaxValueValidator(5)
-    ])
+    grade = models.SmallIntegerField(
+        validators=[validators.MinValueValidator(1), validators.MaxValueValidator(5)]
+    )
 
     class Meta:
         unique_together = ("user", "product")
 
     def __str__(self):
-        return f"{self.user.username} appreciated {self.product.name}"
+        return (
+            f"{self.user.username or self.user.email} appreciated {self.product.name}"
+        )

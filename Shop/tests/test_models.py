@@ -16,6 +16,7 @@ class TestModels(TestCase):
             email="test@example.com",
             password="pass1234",
             phone="998901234567",
+            language="en",
         )
         self.profile = models.Profile.objects.create(user=self.user)
 

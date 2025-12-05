@@ -22,7 +22,7 @@ urlpatterns = [
         name="reset-password-confirm",
     ),
     path("to_card/", views.ToCardView.as_view(), name="to-card"),
-    path("remove_card/", views.RemoveCardView.as_view(), name="remove-card"),
+    path("remove_card/<uuid:pk>", views.RemoveCardView.as_view(), name="remove-card"),
     path("to_order/", views.ToOrderView.as_view(), name="to-order"),
     path(
         "change_order_status/",
@@ -31,8 +31,8 @@ urlpatterns = [
     ),
     path("orders/", OrderListView.as_view(), name="order-list"),
     path("orders/<uuid:pk>/", OrderRetrieveView.as_view(), name="order-detail"),
-    path("card/", views.CardListView.as_view(), name="card-list"),
-    path("card/<uuid:pk>/", views.CardRetriveView.as_view(), name="card-detail"),
+    path("cards/", views.CardListView.as_view(), name="card-list"),
+    path("card/", views.CardRetriveView.as_view(), name="card-detail"),
     path(
         "reset_password_by_old_password/",
         views.ResetPasswordByOldPassword.as_view(),
@@ -43,8 +43,19 @@ urlpatterns = [
     path("contact-us/", views.ContactUsView.as_view(), name="contact_us"),
     path("auth/google/", GoogleAuthView.as_view()),
     path("payments/webhook/", views.StripeWebhookView.as_view(), name="stripe-webhook"),
-    path("add_product_to_flash_sale/", views.FlashSaleAddProductsView.as_view(), name="add-product-to-flash-sale"),
-    path("romve_product_from_flash_sale/", views.FlashSaleRemoveProductsView.as_view(), name="remove-product-to-flash-sale"),
+    path(
+        "add_product_to_flash_sale/<uuid:pk>/",
+        views.FlashSaleAddProductsView.as_view(),
+        name="add-product-to-flash-sale",
+    ),
+    path(
+        "romve_product_from_flash_sale/<uuid:pk>/",
+        views.FlashSaleRemoveProductsView.as_view(),
+        name="remove-product-to-flash-sale",
+    ),
+    path("user/", views.UserApiView.as_view(), name="user"),
+    path("user/<uuid:pk>/", views.UserApiView.as_view(), name="detail_user"),
+    path("update_card/", views.UpdateCardView.as_view(), name="update_card"),
 ]
 
 

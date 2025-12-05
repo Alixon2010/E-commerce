@@ -1,0 +1,359 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-25 22:14+0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: Shop/models.py:178
+msgid "Kutilmoqda"
+msgstr "Kutilmoqda"
+
+#: Shop/models.py:179
+msgid "Yuborilgan"
+msgstr "Yuborilgan"
+
+#: Shop/models.py:180
+msgid "Yetkazilgan"
+msgstr "Yetkazilgan"
+
+#: Shop/models.py:181
+msgid "Bekor qilingan"
+msgstr "Bekor qilingan"
+
+#: Shop/serializers.py:67
+msgid "Bu maydon majburiy."
+msgstr "Bu maydon majburiy."
+
+#: Shop/serializers.py:84
+msgid "Bu maydon kiritilishi zarur"
+msgstr "Bu maydon kiritilishi zarur"
+
+#: Shop/serializers.py:92
+msgid "Parolni kiriting"
+msgstr "Parolni kiriting"
+
+#: Shop/serializers.py:95
+msgid "Parol tasdiqlashni kiriting"
+msgstr "Parol tasdiqlashni kiriting"
+
+#: Shop/serializers.py:98
+msgid "Parol va parol tasdiqlash mos kelmadi"
+msgstr "Parol va parol tasdiqlash mos kelmadi"
+
+#: Shop/serializers.py:105
+msgid "Email allaqachon mavjud!"
+msgstr "Email allaqachon mavjud!"
+
+#: Shop/serializers.py:170 Shop/serializers.py:206
+msgid "Email noto‘g‘ri!"
+msgstr "Email noto‘g‘ri!"
+
+#: Shop/serializers.py:185
+msgid "Parolni tiklash kodi"
+msgstr "Parolni tiklash kodi"
+
+#: Shop/serializers.py:186
+#, python-format
+msgid "Qayta tiklash kodi: %(code)s"
+msgstr "Qayta tiklash kodi: %(code)s"
+
+#: Shop/serializers.py:212
+msgid "Qayta tiklash kodi muddati tugagan"
+msgstr "Qayta tiklash kodi muddati tugagan"
+
+#: Shop/serializers.py:215
+msgid "Qayta tiklash kodi noto‘g‘ri"
+msgstr "Qayta tiklash kodi noto‘g‘ri"
+
+#: Shop/serializers.py:257
+msgid "Foydalanuvchi topilmadi"
+msgstr "Foydalanuvchi topilmadi"
+
+#: Shop/serializers.py:262 Shop/serializers.py:291
+msgid "Mahsulot topilmadi"
+msgstr "Mahsulot topilmadi"
+
+#: Shop/serializers.py:265
+msgid "Mahsulot bazada yetarli emas"
+msgstr "Mahsulot bazada yetarli emas"
+
+#: Shop/serializers.py:272
+msgid "Xatolik yuz berdi, iltimos keyinroq urinib ko‘ring"
+msgstr "Xatolik yuz berdi, iltimos keyinroq urinib ko‘ring"
+
+#: Shop/serializers.py:286 Shop/serializers.py:322
+msgid "Savat topilmadi"
+msgstr "Savat topilmadi"
+
+#: Shop/serializers.py:296
+msgid "Savatingizda mahsulot topilmadi"
+msgstr "Savatingizda mahsulot topilmadi"
+
+#: Shop/serializers.py:307 Shop/serializers.py:394
+msgid "Kenglik -90 va 90 oralig‘ida bo‘lishi kerak"
+msgstr "Kenglik -90 va 90 oralig‘ida bo‘lishi kerak"
+
+#: Shop/serializers.py:312 Shop/serializers.py:399
+msgid "Uzunlik -180 va 180 oralig‘ida bo‘lishi kerak"
+msgstr "Uzunlik -180 va 180 oralig‘ida bo‘lishi kerak"
+
+#: Shop/serializers.py:411 Shop/views.py:418
+msgid "Buyurtma topilmadi"
+msgstr "Buyurtma topilmadi"
+
+#: Shop/serializers.py:420
+msgid "Status noto‘g‘ri"
+msgstr "Status noto‘g‘ri"
+
+#: Shop/serializers.py:436
+msgid "Parollar mos kelmadi"
+msgstr "Parollar mos kelmadi"
+
+#: Shop/serializers.py:467
+msgid "Email/telefon yoki parol noto‘g‘ri"
+msgstr "Email/telefon yoki parol noto‘g‘ri"
+
+#: Shop/serializers.py:483
+msgid "Email yoki telefon kiriting"
+msgstr "Email yoki telefon kiriting"
+
+#: Shop/views.py:68
+msgid ""
+"Productlarni saralash uchun parameterlar:\n"
+"\\- `stars` — reyting bo‘yicha yuqoridan pastga,\n"
+"\\- `price_up` — narx bo‘yicha pastdan yuqoriga,\n"
+"\\- `price_down` — narx bo‘yicha yuqoridan pastga."
+msgstr ""
+"Productlarni saralash uchun parameterlar:\n"
+"\\- `stars` — reyting bo‘yicha yuqoridan pastga,\n"
+"\\- `price_up` — narx bo‘yicha pastdan yuqoriga,\n"
+"\\- `price_down` — narx bo‘yicha yuqoridan pastga."
+
+#: Shop/views.py:107
+msgid "Foydalanuvchi muvaffaqiyatli yaratildi!"
+msgstr "Foydalanuvchi muvaffaqiyatli yaratildi!"
+
+#: Shop/views.py:126 Shop/views.py:129
+msgid "Foydalanuvchi tizimdan chiqdi!"
+msgstr "Foydalanuvchi tizimdan chiqdi!"
+
+#: Shop/views.py:134 Shop/views.py:142
+msgid "Parolni tiklash yuborildi!"
+msgstr "Parolni tiklash yuborildi!"
+
+#: Shop/views.py:148 Shop/views.py:157
+msgid "Parol muvaffaqiyatli tiklandi!"
+msgstr "Parol muvaffaqiyatli tiklandi!"
+
+#: Shop/views.py:177 Shop/views.py:183
+msgid "Mahsulot savatga qo'shildi"
+msgstr "Mahsulot savatga qo'shildi"
+
+#: Shop/views.py:190 Shop/views.py:199
+msgid "Mahsulot savatdan olib tashlandi"
+msgstr "Mahsulot savatdan olib tashlandi"
+
+#: Shop/views.py:207
+msgid "Client Intent"
+msgstr "Client Intent"
+
+#: Shop/views.py:220
+msgid "Savatda mahsulot yo'q"
+msgstr "Savatda mahsulot yo'q"
+
+#: Shop/views.py:229 Shop/views.py:236
+msgid "Status muvaffaqiyatli o'zgartirildi"
+msgstr "Status muvaffaqiyatli o'zgartirildi"
+
+#: Shop/views.py:258 Shop/views.py:268
+msgid "Parol muvaffaqiyatli yangilandi!"
+msgstr "Parol muvaffaqiyatli yangilandi!"
+
+#: Shop/views.py:280 Shop/views.py:292
+msgid "Xabar muvaffaqiyatli yuborildi"
+msgstr "Xabar muvaffaqiyatli yuborildi"
+
+#: Shop/views.py:301
+msgid "Google OAuth access token"
+msgstr "Google OAuth access token"
+
+#: Shop/views.py:309
+msgid "Foydalanuvchi tokenlari"
+msgstr "Foydalanuvchi tokenlari"
+
+#: Shop/views.py:319
+msgid "Token xato yoki email mavjud emas"
+msgstr "Token xato yoki email mavjud emas"
+
+#: Shop/views.py:323
+msgid ""
+"Google orqali autentifikatsiya. Body ichida `access_token` yuboring.\n"
+"Misol: `{ \"access_token\": \"ya29.a0AfH6S...\" }`"
+msgstr ""
+"Google orqali autentifikatsiya. Body ichida `access_token` yuboring.\n"
+"Misol: `{ \"access_token\": \"ya29.a0AfH6S...\" }`"
+
+#: Shop/views.py:333
+msgid "Token yuborilmagan"
+msgstr "Token yuborilmagan"
+
+#: Shop/views.py:340
+msgid "Google token noto‘g‘ri"
+msgstr "Google token noto‘g‘ri"
+
+#: Shop/views.py:382 Shop/views.py:384
+msgid "Stripe endpoint secret sozlanmagan"
+msgstr "Stripe endpoint secret sozlanmagan"
+
+#: Shop/views.py:400
+msgid "Stripe eventni o‘qishda kutilmagan xato"
+msgstr "Stripe eventni o‘qishda kutilmagan xato"
+
+#: Shop/views.py:416
+#, python-format
+msgid "Buyurtma topilmadi: %s"
+msgstr "Buyurtma topilmadi: %s"
+
+#: Shop/views.py:431
+msgid "muvaffaqiyatli"
+msgstr "muvaffaqiyatli"
+
+#: Shop/views.py:435
+msgid "xato"
+msgstr "xato"
+
+#: Shop/views.py:439
+msgid "e'tiborsiz"
+msgstr "e'tiborsiz"
+
+#: Shop/views.py:459 Shop/views.py:474
+msgid "FlashSale topilmadi"
+msgstr "FlashSale topilmadi"
+
+#: Shop/views.py:465
+msgid "mahsulotlar qo'shildi"
+msgstr "mahsulotlar qo'shildi"
+
+#: Shop/views.py:478
+msgid "mahsulotlarning foizi 0ga tenglandi"
+msgstr "mahsulotlarning foizi 0ga tenglandi"
+
+#: Shop/views.py:497
+msgid "Reytingni mahsulot bo‘yicha filtrlash (`?product=12`)."
+msgstr "Reytingni mahsulot bo‘yicha filtrlash (`?product=12`)."
+
+#: Shop/views.py:503
+msgid "Reytingni foydalanuvchi bo‘yicha filtrlash (`?user=5`)."
+msgstr "Reytingni foydalanuvchi bo‘yicha filtrlash (`?user=5`)."
+
+#: Shop/views.py:528
+msgid "Siz bu mahsulotni avval baholagansiz"
+msgstr "Siz bu mahsulotni avval baholagansiz"
+
+#: Shop/views.py:539
+msgid "Ruxsat yo‘q."
+msgstr "Ruxsat yo‘q."
+
+msgid "This field is required."
+msgstr "Bu maydon majburiy."
+
+msgid "This field may not be null."
+msgstr "Bu maydon null bo'lishi mumkin emas."
+
+msgid "Invalid pk \"{pk_value}\" - object does not exist."
+msgstr "Noto‘g‘ri pk \"{pk_value}\" - obyekt mavjud emas."
+
+msgid "Invalid input."
+msgstr "Noto‘g‘ri kiritish."
+
+msgid "Invalid format."
+msgstr "Noto‘g‘ri format."
+
+msgid "Null value not allowed."
+msgstr "Null qiymatga ruxsat berilmagan."
+
+msgid "Blank values are not allowed."
+msgstr "Bo‘sh qiymatga ruxsat berilmagan."
+
+msgid "Invalid email address."
+msgstr "Noto‘g‘ri email manzil."
+
+msgid "Password fields didn't match."
+msgstr "Parollar mos kelmadi."
+
+msgid "Ensure this field has no more than {max_length} characters."
+msgstr "Bu maydon {max_length} ta belgidan oshmasligi kerak."
+
+msgid "Ensure this field has at least {min_length} characters."
+msgstr "Bu maydon kamida {min_length} ta belgidan iborat bo‘lishi kerak."
+
+msgid "Ensure this value is greater than or equal to {min_value}."
+msgstr "Bu qiymat {min_value} yoki undan katta bo‘lishi kerak."
+
+msgid "Ensure this value is less than or equal to {max_value}."
+msgstr "Bu qiymat {max_value} yoki undan kichik bo‘lishi kerak."
+
+msgid "Invalid choice."
+msgstr "Noto‘g‘ri tanlov."
+
+msgid "Invalid boolean."
+msgstr "Noto‘g‘ri boolean."
+
+msgid "Invalid datetime format. Expected ISO 8601."
+msgstr "Noto‘g‘ri datetime formati. ISO 8601 kutilmoqda."
+
+msgid "Invalid date format. Expected ISO 8601."
+msgstr "Noto‘g‘ri sana formati. ISO 8601 kutilmoqda."
+
+msgid "Invalid time format. Expected ISO 8601."
+msgstr "Noto‘g‘ri vaqt formati. ISO 8601 kutilmoqda."
+
+msgid "Invalid URL."
+msgstr "Noto‘g‘ri URL."
+
+msgid "Invalid UUID format."
+msgstr "Noto‘g‘ri UUID formati."
+
+msgid "Invalid slug."
+msgstr "Noto‘g‘ri slug."
+
+msgid "No query parameter provided."
+msgstr "So‘rov parametri berilmagan."
+
+msgid "Invalid token."
+msgstr "Noto‘g‘ri token."
+
+msgid "Authentication credentials were not provided."
+msgstr "Autentifikatsiya ma’lumotlari berilmagan."
+
+msgid "You do not have permission to perform this action."
+msgstr "Bu amalni bajarish uchun ruxsat yo‘q."
+
+msgid "Not found."
+msgstr "Topilmadi."
+
+msgid "Method \"{method}\" not allowed."
+msgstr "\"{method}\" metodi ruxsat etilmagan."
+
+msgid "Invalid query parameter."
+msgstr "Noto‘g‘ri so‘rov parametri."
+
+msgid "Missing required parameter."
+msgstr "Majburiy parametr yo‘q."
+
+msgid "Incorrect username or password."
+msgstr "Noto‘g‘ri username yoki parol."
+
+msgid "User account is disabled."
+msgstr "Foydalanuvchi hisobingiz o‘chirilgan."
+
+msgid "Token is invalid or expired."
+msgstr "Token noto‘g‘ri yoki muddati tugagan."

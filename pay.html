@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Payment</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 50px; }
+    #card-element { border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+    #pay-button { padding: 10px 20px; font-size: 16px; }
+    #message { margin-top: 20px; color: green; }
+    #error-message { margin-top: 20px; color: red; }
+  </style>
+</head>
+<body>
+
+<h2>Test Payment</h2>
+<div id="card-element"></div>
+<button id="pay-button">Pay</button>
+<div id="message"></div>
+<div id="error-message"></div>
+
+<script>
+async function initPayment() {
+  const JWT_TOKEN = prompt("Введите JWT токен"); // или получаем из Telegram WebApp
+  try {
+    // 1. Запрос на backend для создания PaymentIntent
+    const response = await fetch("http://127.0.0.1:8000/api/v1/to_order/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${JWT_TOKEN}`
+      }
+    });
+
+      console.log(response.text())
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.message || "Ошибка на сервере");
+    }
+
+    const data = await response.json();
+    const clientSecret = data.clientSecret;
+    const stripePk = data.stripe_pk;
+    const latitude = data.latitude;
+    const longitude = data.longitude;
+
+    console.log("Координаты пользователя:", latitude, longitude);
+
+    // 2. Инициализация Stripe.js
+    const stripe = Stripe(stripePk);
+    const elements = stripe.elements();
+    const card = elements.create("card");
+    card.mount("#card-element");
+
+    // 3. Кнопка оплаты
+    document.getElementById("pay-button").addEventListener("click", async () => {
+      document.getElementById("message").textContent = "";
+      document.getElementById("error-message").textContent = "";
+
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: card }
+      });
+
+      if (result.error) {
+        document.getElementById("error-message").textContent = result.error.message;
+      } else if (result.paymentIntent.status === "succeeded") {
+        document.getElementById("message").textContent = "Оплата прошла успешно!";
+      } else {
+        document.getElementById("message").textContent = `Статус оплаты: ${result.paymentIntent.status}`;
+      }
+    });
+
+  } catch (err) {
+    document.getElementById("error-message").textContent = err.message;
+    console.error(err);
+  }
+}
+
+// Запуск
+initPayment();
+</script>
+
+</body>
+</html>

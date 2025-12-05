@@ -1,0 +1,251 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-25 21:16+0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: Shop/models.py:178
+msgid "Kutilmoqda"
+msgstr "В ожидании"
+
+#: Shop/models.py:179
+msgid "Yuborilgan"
+msgstr "Отправлено"
+
+#: Shop/models.py:180
+msgid "Yetkazilgan"
+msgstr "Доставлено"
+
+#: Shop/models.py:181
+msgid "Bekor qilingan"
+msgstr "Отменено"
+
+#: Shop/serializers.py:67
+msgid "Bu maydon majburiy."
+msgstr "Это поле обязательно."
+
+#: Shop/serializers.py:84
+msgid "Bu maydon kiritilishi zarur"
+msgstr "Это поле должно быть заполнено"
+
+#: Shop/serializers.py:92
+msgid "Parolni kiriting"
+msgstr "Введите пароль"
+
+#: Shop/serializers.py:95
+msgid "Parol tasdiqlashni kiriting"
+msgstr "Подтвердите пароль"
+
+#: Shop/serializers.py:98
+msgid "Parol va parol tasdiqlash mos kelmadi"
+msgstr "Пароль и подтверждение не совпадают"
+
+#: Shop/serializers.py:105
+msgid "Email allaqachon mavjud!"
+msgstr "Email уже существует!"
+
+#: Shop/serializers.py:170 Shop/serializers.py:206
+msgid "Email noto‘g‘ri!"
+msgstr "Неверный email!"
+
+#: Shop/serializers.py:185
+msgid "Parolni tiklash kodi"
+msgstr "Код восстановления пароля"
+
+#: Shop/serializers.py:186
+#, python-format
+msgid "Qayta tiklash kodi: %(code)s"
+msgstr "Код для восстановления: %(code)s"
+
+#: Shop/serializers.py:212
+msgid "Qayta tiklash kodi muddati tugagan"
+msgstr "Срок действия кода истек"
+
+#: Shop/serializers.py:215
+msgid "Qayta tiklash kodi noto‘g‘ri"
+msgstr "Неверный код восстановления"
+
+#: Shop/serializers.py:257
+msgid "Foydalanuvchi topilmadi"
+msgstr "Пользователь не найден"
+
+#: Shop/serializers.py:262 Shop/serializers.py:291
+msgid "Mahsulot topilmadi"
+msgstr "Товар не найден"
+
+#: Shop/serializers.py:265
+msgid "Mahsulot bazada yetarli emas"
+msgstr "Недостаточно товара на складе"
+
+#: Shop/serializers.py:272
+msgid "Xatolik yuz berdi, iltimos keyinroq urinib ko‘ring"
+msgstr "Произошла ошибка, попробуйте позже"
+
+#: Shop/serializers.py:286 Shop/serializers.py:322
+msgid "Savat topilmadi"
+msgstr "Корзина не найдена"
+
+#: Shop/serializers.py:296
+msgid "Savatingizda mahsulot topilmadi"
+msgstr "Товара нет в вашей корзине"
+
+#: Shop/serializers.py:307 Shop/serializers.py:394
+msgid "Kenglik -90 va 90 oralig‘ida bo‘lishi kerak"
+msgstr "Широта должна быть между -90 и 90"
+
+#: Shop/serializers.py:312 Shop/serializers.py:399
+msgid "Uzunlik -180 va 180 oralig‘ida bo‘lishi kerak"
+msgstr "Долгота должна быть между -180 и 180"
+
+#: Shop/serializers.py:411 Shop/views.py:415
+msgid "Buyurtma topilmadi"
+msgstr "Заказ не найден"
+
+#: Shop/serializers.py:420
+msgid "Status noto‘g‘ri"
+msgstr "Неверный статус"
+
+#: Shop/serializers.py:436
+msgid "Parollar mos kelmadi"
+msgstr "Пароли не совпадают"
+
+#: Shop/serializers.py:467
+msgid "Email/telefon yoki parol noto‘g‘ri"
+msgstr "Неверный email/телефон или пароль"
+
+#: Shop/serializers.py:483
+msgid "Email yoki telefon kiriting"
+msgstr "Введите email или телефон"
+
+#: Shop/views.py:67
+msgid "Productlarni saralash uchun parameterlar:\n\\- `stars` — reyting bo‘yicha yuqoridan pastga,\n\\- `price_up` — narx bo‘yicha pastdan yuqoriga,\n\\- `price_down` — narx bo‘yicha yuqoridan pastga."
+msgstr "Параметры сортировки товаров:\n\\- `stars` — по рейтингу сверху вниз,\n\\- `price_up` — по цене снизу вверх,\n\\- `price_down` — по цене сверху вниз"
+
+#: Shop/views.py:106
+msgid "Foydalanuvchi muvaffaqiyatli yaratildi!"
+msgstr "Пользователь успешно создан!"
+
+#: Shop/views.py:125 Shop/views.py:128
+msgid "Foydalanuvchi tizimdan chiqdi!"
+msgstr "Пользователь вышел из системы!"
+
+#: Shop/views.py:133 Shop/views.py:141
+msgid "Parolni tiklash yuborildi!"
+msgstr "Код восстановления пароля отправлен!"
+
+#: Shop/views.py:147 Shop/views.py:156
+msgid "Parol muvaffaqiyatli tiklandi!"
+msgstr "Пароль успешно восстановлен!"
+
+#: Shop/views.py:176 Shop/views.py:182
+msgid "Mahsulot savatga qo'shildi"
+msgstr "Товар добавлен в корзину"
+
+#: Shop/views.py:189 Shop/views.py:198
+msgid "Mahsulot savatdan olib tashlandi"
+msgstr "Товар удалён из корзины"
+
+#: Shop/views.py:206
+msgid "Client Intent"
+msgstr "Платёжный Intent"
+
+#: Shop/views.py:219
+msgid "Savatda mahsulot yo'q"
+msgstr "В корзине нет товаров"
+
+#: Shop/views.py:228 Shop/views.py:235
+msgid "Status muvaffaqiyatli o'zgartirildi"
+msgstr "Статус успешно изменён"
+
+#: Shop/views.py:257 Shop/views.py:267
+msgid "Parol muvaffaqiyatli yangilandi!"
+msgstr "Пароль успешно обновлён!"
+
+#: Shop/views.py:279 Shop/views.py:291
+msgid "Xabar muvaffaqiyatli yuborildi"
+msgstr "Сообщение успешно отправлено"
+
+#: Shop/views.py:300
+msgid "Google OAuth access token"
+msgstr "Токен доступа Google OAuth"
+
+#: Shop/views.py:308
+msgid "Foydalanuvchi tokenlari"
+msgstr "Токены пользователя"
+
+#: Shop/views.py:318
+msgid "Token xato yoki email mavjud emas"
+msgstr "Неверный токен или email отсутствует"
+
+#: Shop/views.py:321
+msgid "Google orqali autentifikatsiya. Body ichida `access_token` yuboring.\nMisol: `{ \"access_token\": \"ya29.a0AfH6S...\" }`"
+msgstr "Аутентификация через Google. Отправьте `access_token` в теле запроса.\nПример: `{ \"access_token\": \"ya29.a0AfH6S...\" }`"
+
+#: Shop/views.py:330
+msgid "Token yuborilmagan"
+msgstr "Токен не отправлен"
+
+#: Shop/views.py:337
+msgid "Google token noto‘g‘ri"
+msgstr "Неверный токен Google"
+
+#: Shop/views.py:379 Shop/views.py:381
+msgid "Stripe endpoint secret sozlanmagan"
+msgstr "Секрет Stripe не настроен"
+
+#: Shop/views.py:397
+msgid "Stripe eventni o‘qishda kutilmagan xato"
+msgstr "Неожиданная ошибка при чтении события Stripe"
+
+#: Shop/views.py:413
+#, python-format
+msgid "Buyurtma topilmadi: %s"
+msgstr "Заказ не найден: %s"
+
+#: Shop/views.py:428
+msgid "muvaffaqiyatli"
+msgstr "успешно"
+
+#: Shop/views.py:432
+msgid "xato"
+msgstr "ошибка"
+
+#: Shop/views.py:436
+msgid "e'tiborsiz"
+msgstr "игнорировать"
+
+#: Shop/views.py:456 Shop/views.py:471
+msgid "FlashSale topilmadi"
+msgstr "FlashSale не найден"
+
+#: Shop/views.py:462
+msgid "mahsulotlar qo'shildi"
+msgstr "Товары добавлены"
+
+#: Shop/views.py:475
+msgid "mahsulotlarning foizi 0ga tenglandi"
+msgstr "Процент скидки для товаров установлен в 0"
+
+#: Shop/views.py:494
+msgid "Reytingni mahsulot bo‘yicha filtrlash (`?product=12`)."
+msgstr "Фильтр по рейтингу товара (`?product=12`)."
+
+#: Shop/views.py:500
+msgid "Reytingni foydalanuvchi bo‘yicha filtrlash (`?user=5`)."
+msgstr "Фильтр по рейтингу пользователя (`?user=5`)."
+
+#: Shop/views.py:525
+msgid "Siz bu mahsulotni avval baholagansiz"
+msgstr "Вы уже оценивали этот товар"
+
+#: Shop/views.py:536
+msgid "Ruxsat yo‘q."
+msgstr "Нет доступа."

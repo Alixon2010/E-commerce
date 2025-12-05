@@ -1,17 +1,22 @@
-import pytest
-from django.utils import timezone
-from django.contrib.auth.hashers import make_password, check_password
 from datetime import timedelta
+
+import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password, make_password
+from django.utils import timezone
+
 from Shop.models import Profile
 from Shop.serializers import ResetPasswordConfirmSerializer
 
 User = get_user_model()
 
+
 @pytest.mark.django_db
 def test_reset_code_validation():
     # создаём пользователя и профиль
-    user = User.objects.create_user(email="test@example.com", password="password123", username="12421421421")
+    user = User.objects.create_user(
+        email="test@example.com", password="password123", username="12421421421"
+    )
     profile = Profile.objects.create(user=user)
 
     # создаём reset_code и ставим время создания
@@ -24,7 +29,7 @@ def test_reset_code_validation():
     data = {
         "email": user.email,
         "reset_code": reset_code_plain,
-        "new_password": "newpass123"
+        "new_password": "newpass123",
     }
     serializer = ResetPasswordConfirmSerializer(data=data)
     serializer.is_valid(raise_exception=True)

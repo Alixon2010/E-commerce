@@ -205,3 +205,4 @@ Thumbs.db
 !**/migrations/__init__.py
 **/migrations/*
 
+.env.docker
