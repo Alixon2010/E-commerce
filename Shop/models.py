@@ -80,6 +80,12 @@ class Product(UUIDModel):
         related_name="products",
     )
 
+    @property
+    def avg_rating(self):
+        from django.db.models import Avg
+        result = self.stars.aggregate(avg_rating=Avg('grade'))
+        return round(result['avg_rating'], 1) if result['avg_rating'] else None
+
     def get_total_price(self):
         return self.price * (Decimal(1) - Decimal(self.discount_percent) / Decimal(100))
 

@@ -90,7 +90,7 @@ class ProductViewSet(ModelViewSet):
         manual_parameters=[sort_param], responses={200: ProductSerializer(many=True)}
     )
     def get_queryset(self):
-        qs = Product.objects.select_related("category").prefetch_related("stars")
+        qs = Product.objects.select_related("category").prefetch_related("stars").order_by("name")
 
         sort = self.request.query_params.get("sort")
 
@@ -244,7 +244,10 @@ class RemoveCardView(APIView):
     def delete(self, request, pk):
         card = get_object_or_404(CardProduct, pk=pk)
         if card is not None:
-            card.delete()
+            with transaction.atomic():
+                card.delete()
+                card.product.stock += card.quantity
+                card.product.save()
 
         return Response("Product removed from card", status=status.HTTP_204_NO_CONTENT)
 

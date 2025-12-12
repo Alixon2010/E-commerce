@@ -4,6 +4,7 @@ import random
 from datetime import timedelta
 
 import stripe
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password
@@ -71,6 +72,11 @@ class ProductSerializer(ModelSerializer):
         product = Product.objects.create(category=category, **validated_data)
         return product
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["avg_rating"] = instance.avg_rating
+        return data
+
 
 class ProfileSerializer(ModelSerializer):
     class Meta:
@@ -81,7 +87,7 @@ class ProfileSerializer(ModelSerializer):
 
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password = CharField(write_only=True)
+    password = CharField(write_only=True, validators=[validate_password])
     password_confirm = CharField(
         write_only=True, error_messages={"required": _("Bu maydon kiritilishi zarur")}
     )
@@ -100,11 +106,6 @@ class RegisterSerializer(serializers.Serializer):
             raise ValidationError(
                 {"message": _("Parol va parol tasdiqlash mos kelmadi")}
             )
-
-        # if len(password) < 8:
-        #     raise ValidationError(
-        #         {"message"}
-        #     )
 
         return attrs
 
@@ -277,7 +278,8 @@ class CardSerializer(Serializer):
                     "id": cp.id,
                     "name": cp.product.name,
                     "quantity": cp.quantity,
-                    "price": cp.total_price
+                    "price": cp.product.get_total_price(),
+                    "total_price": cp.total_price
                 }
                 for cp in instance.card_products.all()
             ],
@@ -545,12 +547,6 @@ class ContactMessageSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_("Email yoki telefon kiriting"))
         return attrs
 
-
-class ProductInFlashSerializer(ProductSerializer):
-    class Meta:
-        model = Product
-        read_only_fields = ("id",)
-        exclude = ("flash",)
 
 
 class FlashSalesSerializer(ModelSerializer):
